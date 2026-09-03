@@ -23,7 +23,7 @@ TARGET = "04-09-2026"
 BASELINES = {
     "eze": ["01-09-2026", "02-09-2026", "03-09-2026", "05-09-2026",
             "06-09-2026", "07-09-2026", "08-09-2026"],
-    "aep": ["01-09-2026", "02-09-2026", "03-09-2026"],
+    "aep": ["01-09-2026", "02-09-2026", "03-09-2026", "05-09-2026"],
 }
 RAW = os.path.join(os.path.dirname(__file__), "..", "data", "raw")
 OUT = os.path.join(os.path.dirname(__file__), "..", "out")
@@ -242,8 +242,9 @@ def main():
     dias_eze, dias_aep = datos["eze"]["dias"], datos["aep"]["dias"]
     print("# Arribos EZE/AEP — viernes 04-09-2026 vs programación habitual\n")
     print(f"Baseline: moda de la hora programada por vuelo sobre los días que "
-          f"publica la fuente (EZE: {dias_eze} días, 01..08-09; AEP: {dias_aep} "
-          f"días, 01..03-09). Los viernes comparables 28-08 / 11-09 / 18-09 no "
+          f"publica la fuente (EZE: {dias_eze} días, AEP: {dias_aep} días, "
+          f"entre el 01 y el 08-09 sin contar el 04). Los viernes comparables "
+          f"28-08 / 11-09 / 18-09 no "
           f"están disponibles en la API (ventana ~[-2,+5] días), así que un "
           f"delta con confianza baja puede ser variación normal por día de "
           f"semana y no un cambio puntual.\n")

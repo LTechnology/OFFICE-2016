@@ -1,8 +1,8 @@
 # Arribos EZE/AEP — viernes 04-09-2026 vs programación habitual
 
-Baseline: moda de la hora programada por vuelo sobre los días que publica la fuente (EZE: 7 días, 01..08-09; AEP: 3 días, 01..03-09). Los viernes comparables 28-08 / 11-09 / 18-09 no están disponibles en la API (ventana ~[-2,+5] días), así que un delta con confianza baja puede ser variación normal por día de semana y no un cambio puntual.
+Baseline: moda de la hora programada por vuelo sobre los días que publica la fuente (EZE: 7 días, AEP: 4 días, entre el 01 y el 08-09 sin contar el 04). Los viernes comparables 28-08 / 11-09 / 18-09 no están disponibles en la API (ventana ~[-2,+5] días), así que un delta con confianza baja puede ser variación normal por día de semana y no un cambio puntual.
 
-Totales: CANCELADO: 1, AUSENTE: 45, CAMBIO_AEROPUERTO: 13, CAMBIO_HORARIO: 107, NUEVO: 38, SIN_CAMBIO: 129 
+Totales: CANCELADO: 1, AUSENTE: 33, CAMBIO_AEROPUERTO: 9, CAMBIO_HORARIO: 121, NUEVO: 27, SIN_CAMBIO: 133 
 
 ## Cancelados (estado de la fuente) — 1
 
@@ -10,217 +10,204 @@ Totales: CANCELADO: 1, AUSENTE: 45, CAMBIO_AEROPUERTO: 13, CAMBIO_HORARIO: 107, 
 |---|---|---|---|---|---|---|---|---|---|
 | EZE | AR 1981 | AEROLINEAS ARGENTINAS | RGA | 08:15 | 08:15 | 0 | alta | NO | 5 |
 
-## Ausentes el 04-09 (vuelan la mayoría de los días baseline — posible cancelación) — 45
+## Ausentes el 04-09 (vuelan la mayoría de los días baseline — posible cancelación) — 33
 
 | aeropuerto | vuelo | aerolinea | origen | hora_04sep | hora_baseline | delta_min | confianza | en_franja_paro | n_baselines |
 |---|---|---|---|---|---|---|---|---|---|
-| AEP | AR 1265 | AEROLINEAS ARGENTINAS | GIG |  | 17:30 |  | alta | NO | 3 |
+| AEP | AR 1365 | AEROLINEAS ARGENTINAS | LIM |  | 04:05 |  | alta | NO | 3 |
+| AEP | G3 7662 | GOL LINHAS AÉREAS | GIG |  | 08:00 |  | alta | NO | 3 |
+| AEP | AR 1671 | AEROLINEAS ARGENTINAS | BRC |  | 13:05 |  | alta | NO | 4 |
+| AEP | AR 1265 | AEROLINEAS ARGENTINAS | GIG |  | 17:30 |  | alta | NO | 4 |
 | AEP | AR 1769 | AEROLINEAS ARGENTINAS | PSS |  | 23:25 |  | alta | NO | 3 |
-| AEP | WJ 3815 | JETSMART AIRLINES | GIG |  | 23:30 |  | alta | NO | 3 |
+| AEP | WJ 3815 | JETSMART AIRLINES | GIG |  | 23:30 |  | alta | NO | 4 |
 | EZE | DM 6206 | ARAJET | PUJ |  | 00:05 |  | alta | NO | 5 |
 | EZE | H8 5800 | SKY AIRLINE PERU | SCL |  | 04:00 |  | alta | NO | 4 |
 | EZE | LR 0647 | AVIANCA COSTA RICA (LACSA) | UIO |  | 05:00 |  | alta | NO | 5 |
 | EZE | PU 501 | PLUS ULTRA | MAD |  | 06:45 |  | alta | NO | 6 |
 | EZE | AC 090 | AIR CANADA | YYZ |  | 14:30 |  | alta | NO | 4 |
-| EZE | JJ 8022 | LATAM BRASIL | GRU |  | 15:45 |  | alta | NO | 7 |
 | EZE | AR 1375 | AEROLINEAS ARGENTINAS | AUA |  | 17:00 |  | alta | NO | 5 |
 | EZE | LL 2603 | LEVEL | BCN |  | 18:00 |  | alta | SI | 5 |
-| EZE | LA 477 | LATAM CHILE | SCL |  | 18:21 |  | alta | SI | 7 |
 | EZE | AR 1329 | AEROLINEAS ARGENTINAS | PUJ |  | 19:55 |  | alta | SI | 4 |
 | EZE | WJ 3075 | JETSMART AIRLINES | MDZ |  | 23:58 |  | alta | NO | 5 |
-| AEP | WJ 3235 | JETSMART AIRLINES | TUC |  | 00:23 |  | media | NO | 2 |
-| AEP | AR 1365 | AEROLINEAS ARGENTINAS | LIM |  | 04:05 |  | media | NO | 2 |
-| AEP | G3 7662 | GOL LINHAS AÉREAS | GIG |  | 08:00 |  | media | NO | 2 |
+| AEP | WJ 3021 | JETSMART AIRLINES | SLA |  | 00:09 |  | media | NO | 3 |
+| AEP | WJ 3235 | JETSMART AIRLINES | TUC |  | 00:23 |  | media | NO | 3 |
 | AEP | LP 2445 | LATAM PERU | LIM |  | 08:30 |  | media | NO | 3 |
-| AEP | AR 1527 | AEROLINEAS ARGENTINAS | COR |  | 10:30 |  | media | SI | 2 |
-| AEP | AR 1627 | AEROLINEAS ARGENTINAS | VDM |  | 11:00 |  | media | SI | 2 |
-| AEP | AR 1671 | AEROLINEAS ARGENTINAS | BRC |  | 13:05 |  | media | NO | 3 |
-| AEP | WJ 3883 | JETSMART AIRLINES | SCL |  | 18:20 |  | media | SI | 2 |
-| AEP | AR 1233 | AEROLINEAS ARGENTINAS | POA |  | 23:00 |  | media | NO | 2 |
+| AEP | AR 1669 | AEROLINEAS ARGENTINAS | BRC |  | 12:05 |  | media | NO | 4 |
+| AEP | AR 1647 | AEROLINEAS ARGENTINAS | NQN |  | 18:35 |  | media | SI | 3 |
 | EZE | DM 6266 | ARAJET | PUJ |  | 08:15 |  | media | NO | 4 |
 | EZE | WJ 3038 | JETSMART AIRLINES | BRC |  | 11:45 |  | media | SI | 4 |
 | EZE | WJ 3044 | JETSMART AIRLINES | BRC |  | 19:05 |  | media | SI | 5 |
 | EZE | AR 1479 | AEROLINEAS ARGENTINAS | TUC |  | 21:10 |  | media | NO | 4 |
-| AEP | WJ 3065 | JETSMART AIRLINES | RES |  | 00:29 |  | baja | NO | 2 |
-| AEP | WJ 3164 | JETSMART AIRLINES | NQN |  | 00:47 |  | baja | NO | 2 |
-| AEP | WJ 3141 | JETSMART AIRLINES | IGR |  | 09:34 |  | baja | SI | 2 |
-| AEP | WJ 3073 | JETSMART AIRLINES | MDZ |  | 10:23 |  | baja | SI | 3 |
-| AEP | AR 1775 | AEROLINEAS ARGENTINAS | IGR |  | 11:30 |  | baja | SI | 2 |
-| AEP | AR 1669 | AEROLINEAS ARGENTINAS | BRC |  | 12:05 |  | baja | NO | 3 |
-| AEP | AR 1741 | AEROLINEAS ARGENTINAS | RES |  | 15:00 |  | baja | NO | 2 |
-| AEP | WJ 3182 | JETSMART AIRLINES | CPC |  | 15:15 |  | baja | NO | 3 |
-| AEP | AR 1819 | AEROLINEAS ARGENTINAS | EQS |  | 18:15 |  | baja | SI | 2 |
-| AEP | AR 1647 | AEROLINEAS ARGENTINAS | NQN |  | 18:35 |  | baja | SI | 2 |
-| AEP | WJ 3063 | JETSMART AIRLINES | RES |  | 19:44 |  | baja | SI | 2 |
-| AEP | WJ 3109 | JETSMART AIRLINES | COR |  | 19:54 |  | baja | SI | 2 |
-| AEP | WJ 3111 | JETSMART AIRLINES | COR |  | 20:44 |  | baja | SI | 2 |
-| AEP | AR 1707 | AEROLINEAS ARGENTINAS | ROS |  | 20:45 |  | baja | SI | 2 |
-| AEP | WJ 3023 | JETSMART AIRLINES | SLA |  | 22:56 |  | baja | NO | 2 |
-| AEP | WJ 3021 | JETSMART AIRLINES | SLA |  | 23:02 |  | baja | NO | 3 |
-| AEP | WJ 3145 | JETSMART AIRLINES | IGR |  | 23:47 |  | baja | NO | 2 |
+| AEP | WJ 3065 | JETSMART AIRLINES | RES |  | 00:29 |  | baja | NO | 3 |
+| AEP | WJ 3141 | JETSMART AIRLINES | IGR |  | 09:34 |  | baja | SI | 3 |
+| AEP | AR 1775 | AEROLINEAS ARGENTINAS | IGR |  | 11:30 |  | baja | SI | 3 |
+| AEP | WJ 3182 | JETSMART AIRLINES | CPC |  | 15:15 |  | baja | NO | 4 |
+| AEP | WJ 3063 | JETSMART AIRLINES | RES |  | 19:44 |  | baja | SI | 3 |
+| AEP | WJ 3109 | JETSMART AIRLINES | COR |  | 19:54 |  | baja | SI | 3 |
+| AEP | WJ 3111 | JETSMART AIRLINES | COR |  | 20:44 |  | baja | SI | 3 |
+| AEP | WJ 3145 | JETSMART AIRLINES | IGR |  | 23:47 |  | baja | NO | 3 |
 | EZE | AR 1411 | AEROLINEAS ARGENTINAS | MDZ |  | 19:45 |  | baja | SI | 4 |
 
-## Cambian de aeropuerto el 04-09 — 13
+## Cambian de aeropuerto el 04-09 — 9
 
 | aeropuerto | vuelo | aerolinea | origen | hora_04sep | hora_baseline | delta_min | confianza | en_franja_paro | n_baselines | nota |
 |---|---|---|---|---|---|---|---|---|---|---|
 | EZE->AEP | AR 1745 | AEROLINEAS ARGENTINAS | RES | 17:50 | 22:05 | -255 | alta | NO | 4 | habitual en EZE 22:05; el 04-09 opera en AEP 17:50 |
-| EZE->AEP | AR 1421 | AEROLINEAS ARGENTINAS | MDZ | 18:50 | 20:10 | -80 | media | SI | 4 | habitual en EZE 20:10; el 04-09 opera en AEP 18:50 |
-| AEP->EZE | AR 1833 | AEROLINEAS ARGENTINAS | CRD | 20:10 | 20:45 | -35 | media | SI | 2 | habitual en AEP 20:45; el 04-09 opera en EZE 20:10 |
-| AEP->EZE | WJ 3048 | JETSMART AIRLINES | BRC | 18:00 | 04:25 | -625 | baja | SI | 2 | habitual en AEP 04:25; el 04-09 opera en EZE 18:00 |
-| AEP->EZE | WJ 3011 | JETSMART AIRLINES | SLA | 12:36 | 19:46 | -430 | baja | NO | 2 | habitual en AEP 19:46; el 04-09 opera en EZE 12:36 |
-| AEP->EZE | WJ 3013 | JETSMART AIRLINES | SLA | 18:40 | 13:10 | 330 | baja | SI | 2 | habitual en AEP 13:10; el 04-09 opera en EZE 18:40 |
-| AEP->EZE | WJ 3168 | JETSMART AIRLINES | NQN | 18:30 | 13:15 | 315 | baja | SI | 2 | habitual en AEP 13:15; el 04-09 opera en EZE 18:30 |
-| AEP->EZE | AR 1685 | AEROLINEAS ARGENTINAS | BRC | 22:45 | 00:20 | -95 | baja | NO | 3 | habitual en AEP 00:20; el 04-09 opera en EZE 22:45 |
-| AEP->EZE | WJ 3147 | JETSMART AIRLINES | IGR | 17:04 | 15:45 | 79 | baja | NO | 2 | habitual en AEP 15:45; el 04-09 opera en EZE 17:04 |
-| AEP->EZE | AR 1815 | AEROLINEAS ARGENTINAS | PMY | 22:25 | 23:25 | -60 | baja | NO | 2 | habitual en AEP 23:25; el 04-09 opera en EZE 22:25 |
+| EZE->AEP | AR 1421 | AEROLINEAS ARGENTINAS | MDZ | 18:50 | 20:10 | -80 | media | SI | 5 | habitual en EZE 20:10; el 04-09 opera en AEP 18:50 |
+| AEP->EZE | AR 1691 | AEROLINEAS ARGENTINAS | BRC | 00:55 | 00:55 | 0 | media | NO | 3 | habitual en AEP 00:55; el 04-09 opera en EZE 00:55 |
+| AEP->EZE | WJ 3048 | JETSMART AIRLINES | BRC | 18:00 | 04:25 | -625 | baja | SI | 3 | habitual en AEP 04:25; el 04-09 opera en EZE 18:00 |
+| AEP->EZE | AR 1685 | AEROLINEAS ARGENTINAS | BRC | 22:45 | 00:20 | -95 | baja | NO | 4 | habitual en AEP 00:20; el 04-09 opera en EZE 22:45 |
+| AEP->EZE | WJ 3147 | JETSMART AIRLINES | IGR | 17:04 | 15:45 | 79 | baja | NO | 3 | habitual en AEP 15:45; el 04-09 opera en EZE 17:04 |
+| AEP->EZE | AR 1815 | AEROLINEAS ARGENTINAS | PMY | 22:25 | 23:25 | -60 | baja | NO | 3 | habitual en AEP 23:25; el 04-09 opera en EZE 22:25 |
 | EZE->AEP | AR 1515 | AEROLINEAS ARGENTINAS | JUJ | 21:30 | 20:50 | 40 | baja | NO | 4 | habitual en EZE 20:50; el 04-09 opera en AEP 21:30 |
-| AEP->EZE | WJ 3042 | JETSMART AIRLINES | BRC | 11:45 | 11:40 | 5 | baja | SI | 2 | habitual en AEP 11:40; el 04-09 opera en EZE 11:45 |
-| AEP->EZE | AR 1691 | AEROLINEAS ARGENTINAS | BRC | 00:55 | 00:55 | 0 | baja | NO | 2 | habitual en AEP 00:55; el 04-09 opera en EZE 00:55 |
+| AEP->EZE | AR 1833 | AEROLINEAS ARGENTINAS | CRD | 20:10 | 20:45 | -35 | baja | SI | 3 | habitual en AEP 20:45; el 04-09 opera en EZE 20:10 |
 
-## Cambio de horario (|delta| >= 5 min vs moda baseline) — 107
+## Cambio de horario (|delta| >= 5 min vs moda baseline) — 121
 
 | aeropuerto | vuelo | aerolinea | origen | hora_04sep | hora_baseline | delta_min | confianza | en_franja_paro | n_baselines |
 |---|---|---|---|---|---|---|---|---|---|
-| AEP | AR 1551 | AEROLINEAS ARGENTINAS | COR | 10:40 | 07:50 | 170 | alta | SI | 3 |
+| AEP | AR 1551 | AEROLINEAS ARGENTINAS | COR | 10:40 | 07:50 | 170 | alta | SI | 4 |
 | EZE | G3 7654 | GOL LINHAS AÉREAS | GIG | 15:30 | 17:40 | -130 | alta | NO | 7 |
 | EZE | WJ 3204 | JETSMART AIRLINES | USH | 00:40 | 23:28 | 72 | alta | NO | 4 |
-| AEP | AR 1823 | AEROLINEAS ARGENTINAS | CRD | 10:50 | 11:00 | -10 | alta | SI | 3 |
-| AEP | AR 1547 | AEROLINEAS ARGENTINAS | COR | 22:15 | 22:25 | -10 | alta | NO | 3 |
+| EZE | LA 477 | LATAM CHILE | SCL | 19:21 | 18:21 | 60 | alta | SI | 7 |
+| EZE | JJ 8022 | LATAM BRASIL | GRU | 15:20 | 15:45 | -25 | alta | NO | 7 |
+| AEP | AR 1823 | AEROLINEAS ARGENTINAS | CRD | 10:50 | 11:00 | -10 | alta | SI | 4 |
+| AEP | AR 1385 | AEROLINEAS ARGENTINAS | MVD | 14:20 | 14:30 | -10 | alta | NO | 4 |
+| AEP | AR 1547 | AEROLINEAS ARGENTINAS | COR | 22:15 | 22:25 | -10 | alta | NO | 4 |
 | AEP | AR 1651 | AEROLINEAS ARGENTINAS | NQN | 22:45 | 22:55 | -10 | alta | NO | 3 |
-| AEP | AR 1241 | AEROLINEAS ARGENTINAS | GRU | 10:00 | 09:55 | 5 | alta | SI | 3 |
-| AEP | AR 1403 | AEROLINEAS ARGENTINAS | MDZ | 10:20 | 10:25 | -5 | alta | SI | 3 |
+| AEP | AR 1241 | AEROLINEAS ARGENTINAS | GRU | 10:00 | 09:55 | 5 | alta | SI | 4 |
+| AEP | AR 1403 | AEROLINEAS ARGENTINAS | MDZ | 10:20 | 10:25 | -5 | alta | SI | 4 |
 | AEP | AR 1485 | AEROLINEAS ARGENTINAS | TUC | 23:20 | 23:25 | -5 | alta | NO | 3 |
 | EZE | AR 1305 | AEROLINEAS ARGENTINAS | MIA | 19:15 | 04:30 | -555 | media | SI | 3 |
-| AEP | WJ 3105 | JETSMART AIRLINES | COR | 08:24 | 00:16 | 488 | media | NO | 2 |
-| AEP | WJ 3162 | JETSMART AIRLINES | NQN | 17:11 | 13:31 | 220 | media | NO | 3 |
+| AEP | WJ 3105 | JETSMART AIRLINES | COR | 08:24 | 00:16 | 488 | media | NO | 3 |
+| AEP | WJ 3162 | JETSMART AIRLINES | NQN | 17:11 | 13:31 | 220 | media | NO | 4 |
+| AEP | AR 1603 | AEROLINEAS ARGENTINAS | MDQ | 12:10 | 10:15 | 115 | media | NO | 4 |
 | EZE | AR 1887 | AEROLINEAS ARGENTINAS | USH | 19:25 | 21:10 | -105 | media | SI | 5 |
 | EZE | AR 1789 | AEROLINEAS ARGENTINAS | IGR | 20:20 | 21:25 | -65 | media | SI | 4 |
-| AEP | AR 1873 | AEROLINEAS ARGENTINAS | USH | 13:50 | 12:50 | 60 | media | NO | 3 |
+| AEP | AR 1873 | AEROLINEAS ARGENTINAS | USH | 13:50 | 12:50 | 60 | media | NO | 4 |
+| AEP | AR 1473 | AEROLINEAS ARGENTINAS | TUC | 13:00 | 13:50 | -50 | media | NO | 4 |
 | AEP | AR 1733 | AEROLINEAS ARGENTINAS | PRA | 15:40 | 16:30 | -50 | media | NO | 3 |
-| AEP | AR 1753 | AEROLINEAS ARGENTINAS | FMA | 14:40 | 13:55 | 45 | media | NO | 2 |
+| AEP | AR 1457 | AEROLINEAS ARGENTINAS | CTC | 21:20 | 22:05 | -45 | media | NO | 2 |
+| AEP | AR 1501 | AEROLINEAS ARGENTINAS | SLA | 22:50 | 23:25 | -35 | media | NO | 2 |
+| AEP | AR 1791 | AEROLINEAS ARGENTINAS | IGR | 21:45 | 22:15 | -30 | media | NO | 3 |
 | EZE | O4 401 | ANDES LINEAS AEREAS | BRC | 22:20 | 21:50 | 30 | media | NO | 6 |
-| AEP | AR 1725 | AEROLINEAS ARGENTINAS | SFN | 09:55 | 09:40 | 15 | media | SI | 3 |
+| AEP | G3 7648 | GOL LINHAS AÉREAS | GRU | 01:40 | 02:00 | -20 | media | NO | 2 |
+| AEP | G3 7656 | GOL LINHAS AÉREAS | GIG | 02:00 | 01:40 | 20 | media | NO | 2 |
+| AEP | AR 1725 | AEROLINEAS ARGENTINAS | SFN | 09:55 | 09:40 | 15 | media | SI | 4 |
 | AEP | AR 1635 | AEROLINEAS ARGENTINAS | RSA | 13:35 | 13:50 | -15 | media | NO | 3 |
-| AEP | AR 1637 | AEROLINEAS ARGENTINAS | NQN | 10:55 | 10:45 | 10 | media | SI | 3 |
-| AEP | AR 1385 | AEROLINEAS ARGENTINAS | MVD | 14:20 | 14:30 | -10 | media | NO | 3 |
-| AEP | LA 455 | LATAM CHILE | SCL | 14:40 | 14:50 | -10 | media | NO | 3 |
+| AEP | AR 1637 | AEROLINEAS ARGENTINAS | NQN | 10:55 | 10:45 | 10 | media | SI | 4 |
+| AEP | LA 455 | LATAM CHILE | SCL | 14:40 | 14:50 | -10 | media | NO | 4 |
 | AEP | AR 1793 | AEROLINEAS ARGENTINAS | IGR | 23:15 | 23:25 | -10 | media | NO | 3 |
 | EZE | AR 1545 | AEROLINEAS ARGENTINAS | COR | 21:10 | 21:20 | -10 | media | NO | 6 |
-| AEP | AR 1765 | AEROLINEAS ARGENTINAS | PSS | 16:10 | 16:05 | 5 | media | NO | 3 |
+| AEP | AR 1523 | AEROLINEAS ARGENTINAS | COR | 11:35 | 11:40 | -5 | media | SI | 4 |
+| AEP | AR 1495 | AEROLINEAS ARGENTINAS | SLA | 13:05 | 13:00 | 5 | media | NO | 4 |
+| AEP | AR 1749 | AEROLINEAS ARGENTINAS | CNQ | 15:55 | 15:50 | 5 | media | NO | 3 |
+| AEP | AR 1765 | AEROLINEAS ARGENTINAS | PSS | 16:10 | 16:05 | 5 | media | NO | 4 |
+| AEP | AR 1449 | AEROLINEAS ARGENTINAS | UAQ | 23:25 | 23:20 | 5 | media | NO | 3 |
 | AEP | WJ 3149 | JETSMART AIRLINES | IGR | 00:34 | 12:54 | 700 | baja | NO | 1 |
-| AEP | WJ 3231 | JETSMART AIRLINES | TUC | 00:23 | 12:48 | 695 | baja | NO | 1 |
+| AEP | WJ 3231 | JETSMART AIRLINES | TUC | 00:23 | 12:48 | 695 | baja | NO | 2 |
+| EZE | WJ 3011 | JETSMART AIRLINES | SLA | 12:36 | 23:36 | -660 | baja | NO | 1 |
 | AEP | WJ 3107 | JETSMART AIRLINES | COR | 21:31 | 08:21 | -650 | baja | NO | 3 |
-| AEP | AR 1773 | AEROLINEAS ARGENTINAS | IGR | 11:35 | 21:25 | -590 | baja | SI | 2 |
-| AEP | WJ 3143 | JETSMART AIRLINES | IGR | 20:17 | 10:27 | 590 | baja | SI | 2 |
+| AEP | AR 1773 | AEROLINEAS ARGENTINAS | IGR | 11:35 | 21:25 | -590 | baja | SI | 3 |
+| AEP | WJ 3143 | JETSMART AIRLINES | IGR | 20:17 | 10:27 | 590 | baja | SI | 3 |
 | AEP | WJ 3081 | JETSMART AIRLINES | MDZ | 01:07 | 15:44 | 563 | baja | NO | 1 |
 | AEP | AR 1665 | AEROLINEAS ARGENTINAS | BRC | 10:55 | 18:10 | -435 | baja | SI | 1 |
-| AEP | AR 1541 | AEROLINEAS ARGENTINAS | COR | 19:10 | 13:35 | 335 | baja | SI | 3 |
+| EZE | WJ 3013 | JETSMART AIRLINES | SLA | 18:40 | 11:46 | 414 | baja | SI | 1 |
+| AEP | AR 1407 | AEROLINEAS ARGENTINAS | MDZ | 13:15 | 19:20 | -365 | baja | NO | 1 |
+| AEP | AR 1541 | AEROLINEAS ARGENTINAS | COR | 19:10 | 13:35 | 335 | baja | SI | 4 |
+| AEP | AR 1419 | AEROLINEAS ARGENTINAS | MDZ | 21:25 | 15:55 | 330 | baja | NO | 1 |
+| EZE | WJ 3168 | JETSMART AIRLINES | NQN | 18:30 | 13:15 | 315 | baja | SI | 1 |
 | EZE | AR 1673 | AEROLINEAS ARGENTINAS | BRC | 20:25 | 01:20 | -295 | baja | SI | 6 |
 | AEP | AR 1743 | AEROLINEAS ARGENTINAS | RES | 21:50 | 17:10 | 280 | baja | NO | 1 |
+| AEP | WJ 3151 | JETSMART AIRLINES | IGR | 11:39 | 16:15 | -276 | baja | SI | 1 |
 | AEP | AR 1611 | AEROLINEAS ARGENTINAS | MDQ | 14:25 | 18:55 | -270 | baja | NO | 2 |
 | AEP | AR 1681 | AEROLINEAS ARGENTINAS | BRC | 14:10 | 09:55 | 255 | baja | NO | 3 |
 | AEP | AR 1767 | AEROLINEAS ARGENTINAS | PSS | 23:25 | 19:15 | 250 | baja | NO | 1 |
-| AEP | AR 1497 | AEROLINEAS ARGENTINAS | SLA | 15:50 | 19:35 | -225 | baja | NO | 3 |
-| AEP | AR 1817 | AEROLINEAS ARGENTINAS | EQS | 15:15 | 18:45 | -210 | baja | NO | 1 |
+| AEP | AR 1497 | AEROLINEAS ARGENTINAS | SLA | 15:50 | 19:35 | -225 | baja | NO | 4 |
+| AEP | AR 1817 | AEROLINEAS ARGENTINAS | EQS | 15:15 | 18:45 | -210 | baja | NO | 2 |
 | EZE | WJ 3137 | JETSMART AIRLINES | IGR | 22:09 | 01:39 | -210 | baja | NO | 1 |
-| AEP | AR 1675 | AEROLINEAS ARGENTINAS | BRC | 17:25 | 14:05 | 200 | baja | NO | 3 |
+| AEP | AR 1675 | AEROLINEAS ARGENTINAS | BRC | 17:25 | 14:05 | 200 | baja | NO | 4 |
 | AEP | WJ 3155 | JETSMART AIRLINES | IGR | 12:39 | 15:47 | -188 | baja | NO | 1 |
 | AEP | WJ 3040 | JETSMART AIRLINES | BRC | 13:21 | 10:23 | 178 | baja | NO | 3 |
-| AEP | AR 1677 | AEROLINEAS ARGENTINAS | BRC | 15:10 | 17:35 | -145 | baja | NO | 1 |
-| AEP | AR 1715 | AEROLINEAS ARGENTINAS | ROS | 11:15 | 13:35 | -140 | baja | SI | 2 |
+| AEP | AR 1417 | AEROLINEAS ARGENTINAS | MDZ | 15:30 | 18:05 | -155 | baja | NO | 1 |
+| AEP | AR 1677 | AEROLINEAS ARGENTINAS | BRC | 15:10 | 17:35 | -145 | baja | NO | 2 |
+| AEP | AR 1715 | AEROLINEAS ARGENTINAS | ROS | 11:15 | 13:35 | -140 | baja | SI | 3 |
 | EZE | WJ 3058 | JETSMART AIRLINES | BRC | 23:55 | 01:55 | -120 | baja | NO | 2 |
 | AEP | WJ 3239 | JETSMART AIRLINES | TUC | 22:31 | 00:26 | -115 | baja | NO | 1 |
-| AEP | WJ 3103 | JETSMART AIRLINES | COR | 15:00 | 13:15 | 105 | baja | NO | 2 |
+| AEP | WJ 3103 | JETSMART AIRLINES | COR | 15:00 | 13:15 | 105 | baja | NO | 3 |
 | EZE | WJ 3019 | JETSMART AIRLINES | SLA | 00:46 | 23:16 | 90 | baja | NO | 2 |
 | EZE | WJ 3166 | JETSMART AIRLINES | NQN | 15:29 | 16:59 | -90 | baja | NO | 3 |
 | AEP | WJ 3015 | JETSMART AIRLINES | SLA | 17:41 | 19:04 | -83 | baja | NO | 2 |
 | AEP | AR 1513 | AEROLINEAS ARGENTINAS | JUJ | 14:30 | 13:10 | 80 | baja | NO | 3 |
 | AEP | WJ 3172 | JETSMART AIRLINES | NQN | 23:31 | 22:15 | 76 | baja | NO | 1 |
 | AEP | AR 1461 | AEROLINEAS ARGENTINAS | SDE | 12:40 | 11:25 | 75 | baja | NO | 3 |
+| AEP | AR 1899 | AEROLINEAS ARGENTINAS | FTE | 22:05 | 20:50 | 75 | baja | NO | 1 |
 | AEP | WJ 3071 | JETSMART AIRLINES | MDZ | 10:23 | 09:11 | 72 | baja | SI | 1 |
 | AEP | AR 1729 | AEROLINEAS ARGENTINAS | SFN | 18:05 | 19:10 | -65 | baja | SI | 2 |
-| AEP | AR 1747 | AEROLINEAS ARGENTINAS | CNQ | 12:30 | 11:30 | 60 | baja | NO | 2 |
-| AEP | AR 1875 | AEROLINEAS ARGENTINAS | USH | 14:50 | 13:50 | 60 | baja | NO | 2 |
+| AEP | LA 2445 | LATAM CHILE | LIM | 08:40 | 07:40 | 60 | baja | NO | 1 |
+| AEP | AR 1747 | AEROLINEAS ARGENTINAS | CNQ | 12:30 | 11:30 | 60 | baja | NO | 3 |
+| AEP | AR 1875 | AEROLINEAS ARGENTINAS | USH | 14:50 | 13:50 | 60 | baja | NO | 3 |
 | EZE | AR 1813 | AEROLINEAS ARGENTINAS | PMY | 19:55 | 20:55 | -60 | baja | SI | 2 |
-| AEP | AR 1473 | AEROLINEAS ARGENTINAS | TUC | 13:00 | 13:50 | -50 | baja | NO | 3 |
+| AEP | AR 1439 | AEROLINEAS ARGENTINAS | AFA | 18:05 | 18:55 | -50 | baja | SI | 2 |
 | AEP | AR 1759 | AEROLINEAS ARGENTINAS | FMA | 22:50 | 22:00 | 50 | baja | NO | 1 |
-| AEP | AR 1895 | AEROLINEAS ARGENTINAS | FTE | 14:30 | 13:45 | 45 | baja | NO | 3 |
+| AEP | AR 1895 | AEROLINEAS ARGENTINAS | FTE | 14:30 | 13:45 | 45 | baja | NO | 4 |
+| AEP | AR 1753 | AEROLINEAS ARGENTINAS | FMA | 14:40 | 13:55 | 45 | baja | NO | 3 |
 | AEP | AR 1437 | AEROLINEAS ARGENTINAS | AFA | 16:45 | 16:00 | 45 | baja | NO | 1 |
-| AEP | AR 1457 | AEROLINEAS ARGENTINAS | CTC | 21:20 | 22:05 | -45 | baja | NO | 2 |
 | AEP | AR 1601 | AEROLINEAS ARGENTINAS | LUQ | 23:25 | 22:40 | 45 | baja | NO | 3 |
 | AEP | AR 1475 | AEROLINEAS ARGENTINAS | TUC | 15:50 | 15:10 | 40 | baja | NO | 2 |
-| AEP | AR 1791 | AEROLINEAS ARGENTINAS | IGR | 21:45 | 22:25 | -40 | baja | NO | 2 |
 | AEP | AR 1491 | AEROLINEAS ARGENTINAS | SLA | 17:55 | 18:30 | -35 | baja | NO | 1 |
-| AEP | AR 1501 | AEROLINEAS ARGENTINAS | SLA | 22:50 | 23:25 | -35 | baja | NO | 1 |
 | EZE | WJ 3060 | JETSMART AIRLINES | BRC | 23:00 | 22:25 | 35 | baja | NO | 1 |
 | AEP | WJ 3233 | JETSMART AIRLINES | TUC | 10:58 | 10:28 | 30 | baja | SI | 1 |
-| AEP | AR 1525 | AEROLINEAS ARGENTINAS | COR | 12:30 | 13:00 | -30 | baja | NO | 2 |
+| AEP | AR 1525 | AEROLINEAS ARGENTINAS | COR | 12:30 | 13:00 | -30 | baja | NO | 3 |
 | AEP | AR 1785 | AEROLINEAS ARGENTINAS | IGR | 18:30 | 19:00 | -30 | baja | SI | 2 |
-| AEP | AR 1777 | AEROLINEAS ARGENTINAS | IGR | 13:05 | 13:30 | -25 | baja | NO | 3 |
+| EZE | WJ 3042 | JETSMART AIRLINES | BRC | 11:45 | 12:15 | -30 | baja | SI | 3 |
+| AEP | AR 1777 | AEROLINEAS ARGENTINAS | IGR | 13:05 | 13:30 | -25 | baja | NO | 4 |
 | AEP | AR 1857 | AEROLINEAS ARGENTINAS | RGL | 13:20 | 12:55 | 25 | baja | NO | 1 |
 | AEP | WJ 3192 | JETSMART AIRLINES | REL | 15:27 | 15:52 | -25 | baja | NO | 1 |
-| AEP | AR 1447 | AEROLINEAS ARGENTINAS | UAQ | 17:30 | 17:55 | -25 | baja | NO | 2 |
-| AEP | G3 7648 | GOL LINHAS AÉREAS | GRU | 01:40 | 02:00 | -20 | baja | NO | 1 |
-| AEP | G3 7656 | GOL LINHAS AÉREAS | GIG | 02:00 | 01:40 | 20 | baja | NO | 1 |
-| AEP | AR 1657 | AEROLINEAS ARGENTINAS | CPC | 17:15 | 16:55 | 20 | baja | NO | 2 |
+| AEP | AR 1447 | AEROLINEAS ARGENTINAS | UAQ | 17:30 | 17:55 | -25 | baja | NO | 3 |
+| AEP | AR 1657 | AEROLINEAS ARGENTINAS | CPC | 17:15 | 16:55 | 20 | baja | NO | 3 |
+| AEP | AR 1687 | AEROLINEAS ARGENTINAS | BRC | 23:45 | 23:25 | 20 | baja | NO | 1 |
 | EZE | EK 9921 | EMIRATES | DWC | 08:25 | 08:45 | -20 | baja | NO | 1 |
 | EZE | AR 1625 | AEROLINEAS ARGENTINAS | BHI | 20:50 | 20:30 | 20 | baja | SI | 3 |
 | AEP | AR 1591 | AEROLINEAS ARGENTINAS | RCU | 12:45 | 12:30 | 15 | baja | NO | 2 |
 | AEP | AR 1779 | AEROLINEAS ARGENTINAS | IGR | 15:35 | 15:50 | -15 | baja | NO | 2 |
-| AEP | AR 1781 | AEROLINEAS ARGENTINAS | IGR | 16:50 | 17:05 | -15 | baja | NO | 2 |
+| AEP | AR 1781 | AEROLINEAS ARGENTINAS | IGR | 16:50 | 17:05 | -15 | baja | NO | 3 |
 | AEP | AR 1623 | AEROLINEAS ARGENTINAS | BHI | 18:55 | 18:40 | 15 | baja | SI | 1 |
 | AEP | WJ 3157 | JETSMART AIRLINES | IGR | 10:49 | 10:37 | 12 | baja | SI | 1 |
-| AEP | WJ 3032 | JETSMART AIRLINES | CRD | 19:54 | 19:42 | 12 | baja | SI | 3 |
-| AEP | AR 1523 | AEROLINEAS ARGENTINAS | COR | 11:35 | 11:25 | 10 | baja | SI | 3 |
+| AEP | WJ 3032 | JETSMART AIRLINES | CRD | 19:54 | 19:42 | 12 | baja | SI | 4 |
 | AEP | AR 1453 | AEROLINEAS ARGENTINAS | IRJ | 12:55 | 12:45 | 10 | baja | NO | 2 |
-| AEP | AR 1643 | AEROLINEAS ARGENTINAS | NQN | 16:45 | 16:35 | 10 | baja | NO | 3 |
-| AEP | AR 1829 | AEROLINEAS ARGENTINAS | CRD | 18:35 | 18:25 | 10 | baja | SI | 3 |
+| AEP | AR 1643 | AEROLINEAS ARGENTINAS | NQN | 16:45 | 16:35 | 10 | baja | NO | 4 |
+| AEP | AR 1829 | AEROLINEAS ARGENTINAS | CRD | 18:35 | 18:25 | 10 | baja | SI | 4 |
 | AEP | AR 1543 | AEROLINEAS ARGENTINAS | COR | 19:30 | 19:40 | -10 | baja | SI | 2 |
-| AEP | AR 1679 | AEROLINEAS ARGENTINAS | BRC | 21:25 | 21:35 | -10 | baja | NO | 1 |
+| AEP | AR 1679 | AEROLINEAS ARGENTINAS | BRC | 21:25 | 21:35 | -10 | baja | NO | 2 |
 | AEP | AR 1835 | AEROLINEAS ARGENTINAS | CRD | 22:50 | 23:00 | -10 | baja | NO | 1 |
 | EZE | WJ 3237 | JETSMART AIRLINES | TUC | 16:28 | 16:18 | 10 | baja | NO | 2 |
-| AEP | AR 1361 | AEROLINEAS ARGENTINAS | BOG | 04:40 | 04:35 | 5 | baja | NO | 1 |
-| AEP | AR 1771 | AEROLINEAS ARGENTINAS | IGR | 10:35 | 10:40 | -5 | baja | SI | 1 |
-| AEP | AR 1603 | AEROLINEAS ARGENTINAS | MDQ | 12:10 | 12:05 | 5 | baja | NO | 3 |
-| AEP | AR 1495 | AEROLINEAS ARGENTINAS | SLA | 13:05 | 13:00 | 5 | baja | NO | 3 |
-| AEP | AR 1749 | AEROLINEAS ARGENTINAS | CNQ | 15:55 | 15:50 | 5 | baja | NO | 2 |
-| AEP | AR 1621 | AEROLINEAS ARGENTINAS | BHI | 16:35 | 16:30 | 5 | baja | NO | 2 |
-| AEP | AR 1439 | AEROLINEAS ARGENTINAS | AFA | 18:05 | 18:00 | 5 | baja | SI | 1 |
+| AEP | AR 1361 | AEROLINEAS ARGENTINAS | BOG | 04:40 | 04:35 | 5 | baja | NO | 2 |
+| AEP | AR 1771 | AEROLINEAS ARGENTINAS | IGR | 10:35 | 10:40 | -5 | baja | SI | 2 |
+| AEP | AR 1621 | AEROLINEAS ARGENTINAS | BHI | 16:35 | 16:30 | 5 | baja | NO | 3 |
 | AEP | AR 1499 | AEROLINEAS ARGENTINAS | SLA | 19:55 | 19:50 | 5 | baja | SI | 2 |
-| AEP | AR 1613 | AEROLINEAS ARGENTINAS | MDQ | 23:20 | 23:15 | 5 | baja | NO | 1 |
+| AEP | AR 1613 | AEROLINEAS ARGENTINAS | MDQ | 23:20 | 23:15 | 5 | baja | NO | 2 |
 
-## Nuevos (no aparecen en ningún día baseline) — 38
+## Nuevos (no aparecen en ningún día baseline) — 27
 
 | aeropuerto | vuelo | aerolinea | origen | hora_04sep | hora_baseline | delta_min | confianza | en_franja_paro | n_baselines |
 |---|---|---|---|---|---|---|---|---|---|
+| AEP | AR 1467 | AEROLINEAS ARGENTINAS | RHD | 00:10 |  |  |  | NO | 0 |
 | AEP | WJ 3115 | JETSMART AIRLINES | COR | 00:31 |  |  |  | NO | 0 |
 | AEP | AR 1221 | AEROLINEAS ARGENTINAS | SSA | 06:00 |  |  |  | NO | 0 |
 | AEP | G3 7006 | GOL LINHAS AÉREAS | SSA | 08:00 |  |  |  | NO | 0 |
-| AEP | LA 2445 | LATAM CHILE | LIM | 08:40 |  |  |  | NO | 0 |
-| AEP | WJ 3151 | JETSMART AIRLINES | IGR | 11:39 |  |  |  | SI | 0 |
 | AEP | AR 1471 | AEROLINEAS ARGENTINAS | TUC | 11:50 |  |  |  | SI | 0 |
-| AEP | G3 7060 | GOL LINHAS AÉREAS | BSB | 13:00 |  |  |  | NO | 0 |
-| AEP | AR 1407 | AEROLINEAS ARGENTINAS | MDZ | 13:15 |  |  |  | NO | 0 |
 | AEP | WJ 3206 | JETSMART AIRLINES | USH | 13:28 |  |  |  | NO | 0 |
 | AEP | AR 1841 | AEROLINEAS ARGENTINAS | FTE | 15:30 |  |  |  | NO | 0 |
-| AEP | AR 1417 | AEROLINEAS ARGENTINAS | MDZ | 15:30 |  |  |  | NO | 0 |
-| AEP | JA 0731 | JETSMART CHILE | SCL | 15:30 |  |  |  | NO | 0 |
-| AEP | JJ 8034 | LATAM BRASIL | GRU | 17:00 |  |  |  | NO | 0 |
 | AEP | AR 1283 | AEROLINEAS ARGENTINAS | SCL | 17:40 |  |  |  | NO | 0 |
 | AEP | WJ 3056 | JETSMART AIRLINES | BRC | 18:50 |  |  |  | SI | 0 |
-| AEP | JJ 8166 | LATAM BRASIL | GIG | 20:00 |  |  |  | SI | 0 |
 | AEP | WJ 3174 | JETSMART AIRLINES | NQN | 20:32 |  |  |  | SI | 0 |
 | AEP | AR 1713 | AEROLINEAS ARGENTINAS | ROS | 21:05 |  |  |  | NO | 0 |
-| AEP | AR 1419 | AEROLINEAS ARGENTINAS | MDZ | 21:25 |  |  |  | NO | 0 |
 | AEP | AR 1267 | AEROLINEAS ARGENTINAS | GIG | 21:40 |  |  |  | NO | 0 |
-| AEP | WJ 3821 | JETSMART AIRLINES | FLN | 22:00 |  |  |  | NO | 0 |
-| AEP | AR 1899 | AEROLINEAS ARGENTINAS | FTE | 22:05 |  |  |  | NO | 0 |
 | AEP | AR 1309 | AEROLINEAS ARGENTINAS | GIG | 22:30 |  |  |  | NO | 0 |
 | AEP | WJ 3780 | JETSMART AIRLINES | GIG | 22:40 |  |  |  | NO | 0 |
 | AEP | AR 1537 | AEROLINEAS ARGENTINAS | COR | 22:55 |  |  |  | NO | 0 |
 | AEP | WJ 3159 | JETSMART AIRLINES | IGR | 23:05 |  |  |  | NO | 0 |
-| AEP | AR 1687 | AEROLINEAS ARGENTINAS | BRC | 23:45 |  |  |  | NO | 0 |
 | EZE | WJ 3170 | JETSMART AIRLINES | NQN | 00:09 |  |  |  | NO | 0 |
 | EZE | WJ 3052 | JETSMART AIRLINES | BRC | 00:10 |  |  |  | NO | 0 |
 | EZE | WJ 3009 | JETSMART AIRLINES | SLA | 11:04 |  |  |  | SI | 0 |
@@ -233,6 +220,6 @@ Totales: CANCELADO: 1, AUSENTE: 45, CAMBIO_AEROPUERTO: 13, CAMBIO_HORARIO: 107, 
 | EZE | AR 1415 | AEROLINEAS ARGENTINAS | MDZ | 20:35 |  |  |  | SI | 0 |
 | EZE | O4 659 | ANDES LINEAS AEREAS | BRC | 21:05 |  |  |  | NO | 0 |
 
-Vuelos afectados dentro de las franjas de paro ATE/ANAC (9-12 / 18-21): 64 de 204 reportados.
+Vuelos afectados dentro de las franjas de paro ATE/ANAC (9-12 / 18-21): 57 de 191 reportados.
 
-CSV: out/cambios_04sep.csv (204 filas)
+CSV: out/cambios_04sep.csv (191 filas)
