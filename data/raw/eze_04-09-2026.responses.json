@@ -1,0 +1,148 @@
+[
+  {
+    "url": "https://www.aeropuertosargentina.com/_next/static/CN8_f8JvrKnDQFediBhnM/_clientMiddlewareManifest.json",
+    "status": 200,
+    "contentType": "application/json",
+    "flightArrays": []
+  },
+  {
+    "url": "https://www.aeropuertosargentina.com/_next/data/CN8_f8JvrKnDQFediBhnM/es/nuestros-aeropuertos.json?locale=es",
+    "status": 200,
+    "contentType": "application/json",
+    "flightArrays": []
+  },
+  {
+    "url": "https://www.aeropuertosargentina.com/_next/data/CN8_f8JvrKnDQFediBhnM/es.json?locale=es",
+    "status": 200,
+    "contentType": "application/json",
+    "flightArrays": []
+  },
+  {
+    "url": "https://www.aeropuertosargentina.com/_next/data/CN8_f8JvrKnDQFediBhnM/es/lineas-aereas.json?locale=es",
+    "status": 200,
+    "contentType": "application/json",
+    "flightArrays": []
+  },
+  {
+    "url": "https://www.aeropuertosargentina.com/_next/data/CN8_f8JvrKnDQFediBhnM/es/sobre-nosotros/organismos.json?locale=es",
+    "status": 200,
+    "contentType": "application/json",
+    "flightArrays": []
+  },
+  {
+    "url": "https://www.aeropuertosargentina.com/_next/data/CN8_f8JvrKnDQFediBhnM/es/links-utiles.json?locale=es",
+    "status": 200,
+    "contentType": "application/json",
+    "flightArrays": []
+  },
+  {
+    "url": "https://www.aeropuertosargentina.com/_next/data/CN8_f8JvrKnDQFediBhnM/es/sobre-nosotros.json?locale=es",
+    "status": 200,
+    "contentType": "application/json",
+    "flightArrays": []
+  },
+  {
+    "url": "https://www.aeropuertosargentina.com/_next/data/CN8_f8JvrKnDQFediBhnM/es/contacto.json?locale=es",
+    "status": 200,
+    "contentType": "application/json",
+    "flightArrays": []
+  },
+  {
+    "url": "https://webaa-api-h4d5amdfcze7hthn.a02.azurefd.net/web-prod/v1/api-aa/all-airports",
+    "status": 200,
+    "contentType": "application/json; charset=utf-8",
+    "flightArrays": []
+  },
+  {
+    "url": "https://aa2000.my.salesforce-scrt.com/embeddedservice/v1/embedded-service-config?orgId=00DHs000001S8OJ&esConfigName=Enhanced_Web_Chat_Deployment&language=es",
+    "status": 200,
+    "contentType": "application/json;charset=utf-8",
+    "flightArrays": []
+  },
+  {
+    "url": "https://webaa-api-h4d5amdfcze7hthn.a02.azurefd.net/web-prod/v1/api-aa/all-flights?c=50&idarpt=EZE&movtp=A&f=04-09-2026",
+    "status": 200,
+    "contentType": "application/json; charset=utf-8",
+    "flightArrays": [
+      {
+        "trail": "$",
+        "length": 50,
+        "sampleKeys": [
+          "id",
+          "stda",
+          "arpt",
+          "idaerolinea",
+          "aerolinea",
+          "mov",
+          "nro",
+          "logo",
+          "destorig",
+          "IATAdestorig",
+          "etda",
+          "atda",
+          "sector",
+          "termsec",
+          "gate",
+          "estes",
+          "estin",
+          "estbr",
+          "color",
+          "matricula",
+          "chk_from",
+          "chk_to",
+          "belt",
+          "chk_lyf",
+          "sdtempunit",
+          "sdtemp",
+          "sdphrase",
+          "idclimaicono",
+          "tipoVuelo",
+          "id_flight_tp",
+          "id_flight_tra",
+          "id_flight_reg",
+          "idshared",
+          "acftype",
+          "pasajeros",
+          "posicion",
+          "term",
+          "checkins",
+          "via",
+          "blockon",
+          "blockoff",
+          "acft_body",
+          "rot"
+        ]
+      }
+    ]
+  },
+  {
+    "url": "https://webaa-api-h4d5amdfcze7hthn.a02.azurefd.net/web-prod/v1/api-aa/all-airports-by-id?all=1&idarpt=GIG",
+    "status": 200,
+    "contentType": "application/json; charset=utf-8",
+    "flightArrays": []
+  },
+  {
+    "url": "https://www.aeropuertosargentina.com/_next/data/CN8_f8JvrKnDQFediBhnM/es/vuelos/vuelo.json?flight=WJ%203204&fecha=04-09-2026&movtp=arribos&idarpt=Ezeiza,%20EZE&id=8593394",
+    "status": 200,
+    "contentType": "application/json",
+    "flightArrays": []
+  },
+  {
+    "url": "https://www.aeropuertosargentina.com/_next/data/CN8_f8JvrKnDQFediBhnM/es/vuelos/vuelo.json?flight=WJ%203170&fecha=04-09-2026&movtp=arribos&idarpt=Ezeiza,%20EZE&id=8593393",
+    "status": 200,
+    "contentType": "application/json",
+    "flightArrays": []
+  },
+  {
+    "url": "https://www.aeropuertosargentina.com/_next/data/CN8_f8JvrKnDQFediBhnM/es/vuelos/vuelo.json?flight=WJ%203052&fecha=04-09-2026&movtp=arribos&idarpt=Ezeiza,%20EZE&id=8593385",
+    "status": 200,
+    "contentType": "application/json",
+    "flightArrays": []
+  },
+  {
+    "url": "https://www.aeropuertosargentina.com/_next/data/CN8_f8JvrKnDQFediBhnM/es/vuelos/vuelo.json?flight=AV%20217&fecha=04-09-2026&movtp=arribos&idarpt=Ezeiza,%20EZE&id=8593390",
+    "status": 200,
+    "contentType": "application/json",
+    "flightArrays": []
+  }
+]
