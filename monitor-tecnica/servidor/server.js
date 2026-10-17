@@ -32,7 +32,7 @@ fs.mkdirSync(DATA_DIR, { recursive: true });
 // ---------- Estado ----------
 
 // machines[id] = { id, alias, online, lastSeen, bootTime, user, programas: [], fueraDeHorario, ultimoAvisoFuera }
-// devices[nombre] = { nombre, host, online, lastCheck }
+// devices[nombre] = { nombre, host, pc, online (true/false/null = sin datos), lastCheck, desde }
 let state = { machines: {}, devices: {} };
 try { state = JSON.parse(fs.readFileSync(STATE_PATH, 'utf8')); } catch {}
 state.machines ??= {};
@@ -184,6 +184,7 @@ function handleHeartbeat(body) {
     logEvent('apagado', id, `${nombre} se está apagando${abiertos}`);
     limpiar(m);
     m.detenido = null;
+    sinDatos(id);
     saveState();
     broadcast('estado', publicState());
     return { status: 200, body: { ok: true } };
@@ -197,6 +198,7 @@ function handleHeartbeat(body) {
     logEvent('monitor_detenido', id,
       `En ${nombre} cerraron el monitor${quien ? ` (usuario ${quien})` : ''}. No se va a ver qué pasa en esa PC hasta que se reinicie o vuelvan a iniciar sesión.`);
     limpiar(m);
+    sinDatos(id);
     saveState();
     broadcast('estado', publicState());
     return { status: 200, body: { ok: true } };
@@ -239,10 +241,18 @@ function handleHeartbeat(body) {
   for (const r of m.remotos) if (!remotos.includes(r)) logEvent('remoto_desconectado', id, `Terminó la conexión remota a ${nombre}: ${r}`, { remoto: r });
   m.remotos = remotos;
 
+  // Resultado del ping que hizo esta PC a los dispositivos que tiene asignados.
+  const asignados = dispositivosDe(id);
+  for (const r of Array.isArray(body.dispositivos) ? body.dispositivos : []) {
+    const d = asignados.find(x => x.nombre === texto(r?.nombre));
+    if (d && typeof r.online === 'boolean') actualizarDispositivo(d, r.online);
+  }
+
   evaluarHorario(m);
   saveState();
   broadcast('estado', publicState());
-  return { status: 200, body: { ok: true } };
+  // En la respuesta va la lista de dispositivos que esta PC tiene que pinguear.
+  return { status: 200, body: { ok: true, ping: asignados.map(({ nombre, host }) => ({ nombre, host })) } };
 }
 
 function evaluarHorario(m) {
@@ -272,6 +282,7 @@ function chequearSinSenal() {
       const abiertos = m.programas.length ? ` Tenía abierto: ${m.programas.join(', ')}.` : '';
       logEvent('sin_senal', m.id, `${m.alias} dejó de responder (apagado brusco, corte de luz o sin red).${abiertos}`);
       limpiar(m);
+      sinDatos(m.id);
       cambio = true;
     } else if (m.online) {
       const antes = m.fueraDeHorario;
@@ -287,29 +298,43 @@ function ping(host) {
   return new Promise(resolve => execFile('ping', args, { timeout: 5000 }, err => resolve(!err)));
 }
 
-async function chequearDispositivos() {
-  for (const d of config.dispositivos) {
-    const ok = await ping(d.host);
-    const prev = state.devices[d.nombre];
-    state.devices[d.nombre] = { nombre: d.nombre, host: d.host, online: ok, lastCheck: new Date().toISOString(),
-      desde: prev && prev.online === ok ? prev.desde : new Date().toISOString() };
-    if (prev && prev.online !== ok) {
-      logEvent('dispositivo', d.nombre, `${d.nombre} ${ok ? 'se encendió / volvió a la red' : 'se apagó / salió de la red'}`);
-      evaluarDispositivoFuera(d.nombre, ok);
-    }
+// Los dispositivos con "pc" los pinguea esa PC (están en la red de la iglesia y el
+// servidor puede estar en una VPS); los demás los pinguea el servidor.
+function dispositivosDe(id) { return config.dispositivos.filter(d => d.pc === id); }
+
+function actualizarDispositivo(d, online) {
+  const prev = state.devices[d.nombre];
+  const ahora = new Date().toISOString();
+  state.devices[d.nombre] = {
+    nombre: d.nombre, host: d.host, pc: d.pc ? aliasDe(d.pc) : null, online, lastCheck: ahora,
+    desde: prev && prev.online === online ? prev.desde : ahora,
+  };
+  // "Sin datos" (null) no es ni encendido ni apagado: no genera avisos.
+  if (typeof prev?.online === 'boolean' && typeof online === 'boolean' && prev.online !== online) {
+    logEvent('dispositivo', d.nombre, `${d.nombre} ${online ? 'se encendió / volvió a la red' : 'se apagó / salió de la red'}`);
   }
+  if (online === true && prev?.online !== true && !horarioActivo(d.nombre)) {
+    logEvent('fuera_de_horario', d.nombre, `${d.nombre} está encendido fuera de horario`);
+  }
+}
+
+// La PC que pinguea se apagó o dejó de informar: no se sabe el estado de sus dispositivos.
+function sinDatos(id) {
+  for (const d of dispositivosDe(id)) actualizarDispositivo(d, null);
+}
+
+async function chequearDispositivos() {
+  for (const d of config.dispositivos.filter(d => !d.pc)) actualizarDispositivo(d, await ping(d.host));
   saveState();
   broadcast('estado', publicState());
 }
 
-function evaluarDispositivoFuera(nombre, online) {
-  if (online && !horarioActivo(nombre)) {
-    logEvent('fuera_de_horario', nombre, `${nombre} está encendido fuera de horario`);
-  }
+for (const d of config.dispositivos) {
+  if (d.pc && !state.devices[d.nombre]) actualizarDispositivo(d, null);
 }
 
 setInterval(chequearSinSenal, 15000);
-if (config.dispositivos.length) { chequearDispositivos(); setInterval(chequearDispositivos, 60000); }
+if (config.dispositivos.some(d => !d.pc)) { chequearDispositivos(); setInterval(chequearDispositivos, 60000); }
 
 // ---------- HTTP ----------
 
@@ -317,7 +342,7 @@ function publicState() {
   return {
     ahora: new Date().toISOString(),
     machines: Object.values(state.machines).map(m => ({ ...m, horarios: horariosDe(m.id) })),
-    devices: Object.values(state.devices),
+    devices: config.dispositivos.map(d => state.devices[d.nombre]).filter(Boolean),
     horarios: config.horarios,
     programas: config.programas.map(p => p.nombre),
   };

@@ -42,8 +42,8 @@
   },
 
   "dispositivos": [
-    { "nombre": "Consola de sonido", "host": "192.168.1.50" },
-    { "nombre": "Proyector principal", "host": "192.168.1.60" }
+    { "nombre": "Proyector principal", "host": "192.168.1.60", "pc": "PC-PROYECCION" },
+    { "nombre": "ATEM", "host": "192.168.10.240", "pc": "PC-STREAMING" }
   ],
 
   "notificar": ["fuera_de_horario", "encendido", "apagado", "sin_senal", "programa_abierto", "programa_cerrado", "dispositivo", "remoto_conectado", "remoto_desconectado", "monitor_detenido"],

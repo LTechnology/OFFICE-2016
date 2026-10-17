@@ -107,11 +107,16 @@ function renderState(st) {
     </div>`).join('') : '<div class="card empty">Todavía no se conectó ninguna PC. Instalá el agente en cada computadora.</div>';
 
   $('devSection').hidden = !st.devices.length;
-  $('devices').innerHTML = st.devices.map(d => `
-    <div class="card"><div class="top">
-      <span class="dot ${d.online ? 'ok' : ''}"></span><span class="name">${esc(d.nombre)}</span>
-      <span class="estado" style="color:var(${d.online ? '--ok' : '--muted'})">${d.online ? 'En línea' : 'Apagado'}</span>
-    </div><div class="meta">${esc(d.host)} · ${d.online ? 'en línea' : 'apagado'} ${hace(d.desde)}</div></div>`).join('');
+  $('devices').innerHTML = st.devices.map(d => {
+    const est = d.online === true ? ['ok', '--ok', 'En línea'] : d.online === false ? ['', '--muted', 'Apagado'] : ['', '--muted', 'Sin datos'];
+    const detalle = d.online == null
+      ? `Se controla desde ${esc(d.pc)}, que ahora no está informando`
+      : `${d.online ? 'En línea' : 'Apagado'} ${hace(d.desde)}${d.pc ? ` · controlado desde ${esc(d.pc)}` : ''}`;
+    return `<div class="card"><div class="top">
+      <span class="dot ${est[0]}"></span><span class="name">${esc(d.nombre)}</span>
+      <span class="estado" style="color:var(${est[1]})">${est[2]}</span>
+    </div><div class="meta">${esc(d.host)} · ${detalle}</div></div>`;
+  }).join('');
 
   $('horarios').innerHTML = st.horarios.map(h =>
     `${esc(h.nombre)}: ${h.dias.map(esc).join(', ')} de ${esc(h.desde)} a ${esc(h.hasta)}`).join('<br>');

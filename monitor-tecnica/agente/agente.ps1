@@ -27,10 +27,24 @@ function Enviar($datos, $timeout) {
   $json = $datos | ConvertTo-Json -Compress
   $bytes = [Text.Encoding]::UTF8.GetBytes($json)
   try {
-    Invoke-RestMethod -Uri $url -Method Post -Headers $headers -Body $bytes `
-      -ContentType 'application/json; charset=utf-8' -TimeoutSec $timeout -UseBasicParsing | Out-Null
-    return $true
-  } catch { return $false }
+    return Invoke-RestMethod -Uri $url -Method Post -Headers $headers -Body $bytes `
+      -ContentType 'application/json; charset=utf-8' -TimeoutSec $timeout -UseBasicParsing
+  } catch { return $null }
+}
+
+# Ping a los equipos de la red de la iglesia que el servidor le asignó a esta PC
+# (proyector, ATEM...). Se reintenta una vez para no avisar "apagado" por un paquete perdido.
+function Pinguear($lista) {
+  $resultado = @()
+  foreach ($d in $lista) {
+    $ok = $false
+    for ($i = 0; $i -lt 2 -and -not $ok; $i++) {
+      $p = New-Object Net.NetworkInformation.Ping
+      try { $ok = $p.Send([string]$d.host, 1500).Status -eq 'Success' } catch {} finally { $p.Dispose() }
+    }
+    $resultado += @{ nombre = [string]$d.nombre; online = $ok }
+  }
+  return $resultado
 }
 
 if ($Evento) {
@@ -105,6 +119,7 @@ $elevado = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
   [Security.Principal.WindowsBuiltInRole]::Administrator)
 
 $usuario = $null
+$aPinguear = @()
 $vuelta = 0
 $detenido = $false
 while ($true) {
@@ -127,7 +142,10 @@ while ($true) {
   $procesos = [string[]]@(Get-Process | Select-Object -ExpandProperty ProcessName -Unique) + [string[]]$extra
   $datos = @{ equipo = $equipo; inicioSistema = $inicio; usuario = $usuario; procesos = $procesos; remoto = @(ConexionesRemotas); elevado = $elevado }
   if ($extra -match '^anydesk') { $datos.anydeskId = UltimoIdAnyDesk }
-  $ok = Enviar $datos 8
+  if ($aPinguear.Count) { $datos.dispositivos = @(Pinguear $aPinguear) }
+  $respuesta = Enviar $datos 8
+  $ok = $null -ne $respuesta
+  if ($ok) { $aPinguear = @($respuesta.ping | Where-Object { $_ -and $_.host }) }
 
   $ahora = (Get-Date).ToUniversalTime().ToString('o')
   $estado = @{ ultimoIntento = $ahora; ok = $ok; intervalo = $intervalo }

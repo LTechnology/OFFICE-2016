@@ -144,7 +144,7 @@ desapercibida. Si hace falta más precisión, bajá `-IntervaloSegundos` a 30 al
 | `horarios` | Cuándo está **permitido** que las PCs estén prendidas. `dias`: `dom lun mar mie jue vie sab`. Fuera de estos horarios → 🚨. Pueden cruzar la medianoche (ej. `22:00` a `02:00`). |
 | `equipos` | Por nombre de PC: `alias` para mostrar y, si hace falta, `horarios` propios que reemplazan a los generales. |
 | `accesoRemoto` | Programas de acceso remoto: `procesos` que sólo aparecen mientras hay una sesión abierta. |
-| `dispositivos` | Equipos con IP para controlar por ping (consola, proyector…). También se les aplican los horarios. |
+| `dispositivos` | Equipos con IP para controlar por ping (proyector, ATEM…). Con `"pc": "PC-STREAMING"` el ping lo hace esa compu (necesario si el servidor está en una VPS, porque desde internet no se llega a la red de la iglesia); sin `pc`, lo hace el servidor. Mientras esa compu está apagada, el equipo figura como "sin datos". También se les aplican los horarios. |
 | `notificar` | Qué tipos de evento mandan notificación al celular. Sacá `programa_abierto` / `programa_cerrado` si molestan mucho. |
 
 Después de cambiar el config, reiniciá el servidor. **Los agentes no hay que tocarlos**:
