@@ -12,101 +12,117 @@
 <meta name="apple-mobile-web-app-title" content="Técnica">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f1218">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
+  /* Lenguaje visual de la cabina: módulos de rack con LEDs de estado.
+     Verde = encendido/abierto, rojo = apagado/cerrado, gris = sin datos. */
   :root {
-    --bg: #f3f4f6; --card: #ffffff; --card2: #f8f9fb; --text: #111827; --muted: #6b7280; --line: #e5e7eb;
-    --on: #16a34a; --off: #dc2626; --nd: #9ca3af; --warn: #d97706; --accent: #2563eb;
+    --rack: #e6e8eb; --panel: #f8f9fa; --panel-2: #eef0f2; --line: #d5d9de; --text: #15191e; --muted: #5d6671;
+    --on: #13a150; --off: #d63a31; --nd: #a5adb7; --amber: #b56a00; --accent: #1f5fd1;
+    --display: 'Barlow Semi Condensed', 'Arial Narrow', system-ui, sans-serif;
+    --body: 'Barlow', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #0b0e13; --card: #151a22; --card2: #1b212b; --text: #e8eaee; --muted: #8b95a5; --line: #252c37;
-      --on: #22c55e; --off: #ef4444; --nd: #6b7280; --warn: #f59e0b; --accent: #60a5fa; }
+    :root { --rack: #1b1f25; --panel: #242a32; --panel-2: #2c333c; --line: #363e49; --text: #e8eaed; --muted: #9ba4af;
+      --on: #36d672; --off: #ff5c53; --nd: #66707c; --amber: #ffb22e; --accent: #82b8ff; }
   }
   * { box-sizing: border-box; }
-  body { margin: 0; font: 15px/1.45 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+  body { margin: 0; font: 16px/1.45 var(--body); background: var(--rack); color: var(--text); -webkit-font-smoothing: antialiased; }
   svg { display: block; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-  /* Encabezado */
-  .barra { position: sticky; top: 0; z-index: 5; padding: 10px 16px; padding-top: max(10px, env(safe-area-inset-top));
-    display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line);
-    background: color-mix(in srgb, var(--card) 88%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  /* Barra superior */
+  .barra { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; padding-top: max(10px, env(safe-area-inset-top));
+    background: color-mix(in srgb, var(--rack) 85%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line); }
   .barra img { width: 28px; height: 28px; border-radius: 7px; }
-  .barra h1 { font-size: 17px; margin: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .live { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
-  .btn { font: inherit; font-size: 14px; font-weight: 600; padding: 7px 12px; border-radius: 9px; border: 1px solid var(--line);
-    background: var(--card); color: var(--text); cursor: pointer; white-space: nowrap; }
+  .barra h1 { font: 600 19px/1 var(--display); margin: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .live { font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+  .btn { font: 600 15px var(--body); padding: 7px 13px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--panel); color: var(--text); cursor: pointer; white-space: nowrap; }
   .btn.primario { background: var(--accent); border-color: var(--accent); color: #fff; }
   a.btn { text-decoration: none; }
-  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--nd); display: inline-block; flex: none; }
-  .dot.on { background: var(--on); } .dot.off { background: var(--off); }
+  .led { width: 9px; height: 9px; border-radius: 50%; background: var(--nd); display: inline-block; flex: none; }
+  .on > .led, .led.on { background: var(--on); box-shadow: 0 0 8px color-mix(in srgb, var(--on) 70%, transparent); }
+  .off > .led, .led.off { background: var(--off); box-shadow: 0 0 8px color-mix(in srgb, var(--off) 60%, transparent); }
 
-  main { max-width: 1200px; margin: 0 auto; padding: 16px; padding-bottom: max(24px, env(safe-area-inset-bottom)); display: grid; gap: 22px; }
-  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 10px; font-weight: 600; }
+  main { max-width: 1180px; margin: 0 auto; padding: 20px 16px; padding-bottom: max(32px, env(safe-area-inset-bottom)); display: grid; gap: 28px; }
+  h2 { font: 600 21px/1.2 var(--display); margin: 0 0 12px; }
 
-  /* Franja de alertas */
-  .alertas { display: grid; gap: 8px; }
-  .alerta { display: flex; gap: 10px; align-items: center; padding: 10px 14px; border-radius: 10px; font-weight: 600; font-size: 14px;
-    background: color-mix(in srgb, var(--off) 14%, var(--card)); color: var(--off); border: 1px solid color-mix(in srgb, var(--off) 35%, transparent); }
-  .alerta.aviso { background: color-mix(in srgb, var(--warn) 14%, var(--card)); color: var(--warn); border-color: color-mix(in srgb, var(--warn) 35%, transparent); }
-  .alerta.ok { background: var(--card); color: var(--muted); border-color: var(--line); font-weight: 500; }
+  /* Estado general: lo primero que se lee */
+  .estado-general { display: grid; gap: 6px; }
+  .estado-general .titulo { font: 700 clamp(30px, 5vw, 46px)/1.05 var(--display); letter-spacing: -.01em; margin: 0; }
+  .estado-general.off .titulo { color: var(--off); }
+  .estado-general.on .titulo { color: var(--on); }
+  .estado-general .linea { margin: 0; color: var(--muted); font-size: 17px; }
+  .estado-general .linea.ambar { color: var(--amber); font-weight: 600; }
 
-  /* Tarjetas de PC */
-  .sala { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
-  .pc { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 14px; align-content: start;
-    --c: var(--nd); border-top: 4px solid var(--c); }
-  .pc.on { --c: var(--on); } .pc.off { --c: var(--off); }
-  .pc.fuera { box-shadow: 0 0 0 2px var(--off); }
-  .cab { display: flex; align-items: center; gap: 12px; }
-  .ico { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; flex: none;
-    background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--c); }
-  .ico svg { width: 30px; height: 30px; }
-  .cab h3 { margin: 0; font-size: 19px; line-height: 1.2; }
-  .sub { font-size: 13px; color: var(--muted); }
-  .cab .txt { flex: 1; min-width: 0; }
-  .pill { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 4px 9px; border-radius: 99px; white-space: nowrap;
-    background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--c); }
-  .pc.nd .pill, .pc.nd .ico { color: var(--muted); }
-  .bloque { display: grid; gap: 8px; }
-  .bt { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
-  .apps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-  .app { --c: var(--nd); display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px; background: var(--card2); font-weight: 600; }
-  .app.on { --c: var(--on); } .app.off { --c: var(--off); }
-  .app .led { width: 10px; height: 10px; border-radius: 50%; background: var(--c); flex: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 22%, transparent); }
-  .app .n { flex: 1; }
-  .app .st { font-size: 12px; font-weight: 600; color: var(--c); }
-  .app.nd { color: var(--muted); } .app.nd .st { color: var(--muted); }
-  .equipos { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); }
-  .eq { --c: var(--nd); display: grid; justify-items: center; gap: 4px; padding: 12px 6px 10px; border-radius: 12px; text-align: center;
-    background: color-mix(in srgb, var(--c) 12%, var(--card2)); border: 1px solid color-mix(in srgb, var(--c) 30%, transparent); }
+  /* Módulos de PC */
+  .sala { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+  .mod { --c: var(--nd); position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px 16px 14px 22px; display: grid; gap: 12px; align-content: start; overflow: hidden; }
+  .mod::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 6px; background: var(--c); }
+  .mod.on { --c: var(--on); } .mod.off { --c: var(--off); }
+  .mod.fuera { border-color: var(--off); }
+  .mod-cab { display: flex; align-items: center; gap: 12px; }
+  .lamp { width: 16px; height: 16px; border-radius: 50%; flex: none; background: var(--c);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 18%, transparent), 0 0 16px color-mix(in srgb, var(--c) 55%, transparent); }
+  .mod.nd .lamp { box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 18%, transparent); }
+  .mod-cab h3 { font: 700 28px/1 var(--display); margin: 0; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mod-cab .estado { font: 600 17px/1 var(--display); color: var(--c); white-space: nowrap; }
+  .mod.nd .mod-cab .estado { color: var(--muted); }
+  .mod-sub { margin: -4px 0 0 28px; font-size: 14px; color: var(--muted); }
+  .aviso { margin: 0; padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 15px; }
+  .aviso.rojo { color: var(--off); background: color-mix(in srgb, var(--off) 12%, transparent); }
+  .aviso.ambar { color: var(--amber); background: color-mix(in srgb, var(--amber) 13%, transparent); }
+
+  .leds { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .leds li { display: flex; align-items: center; gap: 12px; padding: 9px 2px; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 17px; }
+  .leds li .n { flex: 1; }
+  .leds li .st { font-size: 14px; font-weight: 500; color: var(--muted); }
+  .leds li.on .st { color: var(--on); } .leds li.off .st { color: var(--off); }
+  .leds li.nd { color: var(--muted); }
+
+  .equipos { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+  .eq { --c: var(--nd); display: grid; grid-template-columns: auto auto; align-items: center; column-gap: 8px; row-gap: 1px; min-width: 120px; }
   .eq.on { --c: var(--on); } .eq.off { --c: var(--off); }
-  .eq svg { width: 38px; height: 38px; color: var(--c); }
-  .eq .n { font-size: 13px; font-weight: 600; line-height: 1.2; }
-  .eq .st { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--c); }
+  .eq svg { width: 36px; height: 36px; color: var(--c); grid-row: span 2; }
+  .eq .n { font-weight: 600; font-size: 15px; line-height: 1.15; }
+  .eq .st { font-size: 13px; color: var(--c); display: flex; align-items: center; gap: 5px; }
   .eq.nd .st { color: var(--muted); }
-  .nota { font-size: 13px; padding: 8px 12px; border-radius: 10px; font-weight: 600; }
-  .nota.rojo { color: var(--off); background: color-mix(in srgb, var(--off) 12%, transparent); }
-  .nota.naranja { color: var(--warn); background: color-mix(in srgb, var(--warn) 14%, transparent); }
-  details.procs { font-size: 13px; border-top: 1px solid var(--line); padding-top: 10px; }
+
+  details.procs { font-size: 14px; }
   details.procs summary { cursor: pointer; color: var(--muted); }
-  details.procs .lista { margin-top: 8px; max-height: 200px; overflow: auto; color: var(--muted); font-family: ui-monospace, Consolas, monospace; font-size: 12px; columns: 2; }
+  details.procs .lista { margin-top: 8px; max-height: 200px; overflow: auto; color: var(--muted); font-size: 13px; columns: 2; }
 
   /* Notificaciones */
-  #notif { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 10px; }
+  #notif { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 10px; }
   #notif p { margin: 0; }
   #notif ol { margin: 0; padding-left: 20px; }
   .acciones { display: flex; gap: 8px; flex-wrap: wrap; }
-  .meta { color: var(--muted); font-size: 13px; }
+  .meta { color: var(--muted); font-size: 14px; }
 
-  /* Registro */
-  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
-  td { padding: 9px 12px; border-top: 1px solid var(--line); vertical-align: top; font-size: 14px; }
+  /* Registro y horarios */
+  .registro { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  td { padding: 9px 14px; border-top: 1px solid var(--line); vertical-align: top; font-size: 15px; }
   tr:first-child td { border-top: 0; }
-  td.t { white-space: nowrap; color: var(--muted); width: 1%; }
+  td.t { white-space: nowrap; color: var(--muted); width: 1%; font-variant-numeric: tabular-nums; }
   td.i { width: 1%; }
   .empty { color: var(--muted); padding: 14px; }
-  .horarios { font-size: 13px; color: var(--muted); }
-  .tm { display: none; font-size: 12px; color: var(--muted); }
+  .horarios { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; color: var(--muted); font-size: 15px; }
+  .horarios b { color: var(--text); font-weight: 600; }
+  .tm { display: none; font-size: 13px; color: var(--muted); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .mod.fuera .lamp { animation: latido 1.6s ease-in-out infinite; }
+    @keyframes latido { 50% { opacity: .35; } }
+  }
   @media (max-width: 560px) {
-    main { padding: 12px; gap: 18px; }
+    main { padding: 16px 12px; gap: 24px; }
     .sala { grid-template-columns: 1fr; }
     td.t { display: none; } .tm { display: block; }
     #connTxt, #salir { display: none; }
@@ -117,7 +133,7 @@
 <header class="barra">
   <img src="/icono-192.png" alt="">
   <h1>Monitor de Técnica</h1>
-  <span class="live"><span id="conn" class="dot"></span><span id="connTxt">conectando…</span></span>
+  <span class="live"><span id="conn" class="led"></span><span id="connTxt">conectando…</span></span>
   <button class="btn" id="btnNotif" type="button" aria-label="Notificaciones">🔔</button>
   <a class="btn" id="salir" href="/logout">Salir</a>
 </header>
@@ -127,12 +143,9 @@
     <div id="notif"></div>
   </section>
 
-  <section class="alertas" id="alertas"></section>
+  <section class="estado-general" id="estadoGeneral" aria-live="polite"></section>
 
-  <section>
-    <h2>Sala de técnica</h2>
-    <div id="sala" class="sala"></div>
-  </section>
+  <section id="sala" class="sala" aria-label="Computadoras"></section>
 
   <section id="otrosSection" hidden>
     <h2>Otros equipos en red</h2>
@@ -140,13 +153,13 @@
   </section>
 
   <section>
-    <h2>Registro de actividad</h2>
-    <table><tbody id="events"></tbody></table>
+    <h2>Actividad</h2>
+    <div class="registro"><table><tbody id="events"></tbody></table></div>
   </section>
 
   <section>
     <h2>Horarios permitidos</h2>
-    <div id="horarios" class="horarios"></div>
+    <ul id="horarios" class="horarios"></ul>
   </section>
 </main>
 <script>
@@ -184,58 +197,73 @@ let last = null;
 const procsAbiertos = new Set();
 // Estado visual: on (verde), off (rojo), nd (gris: sin datos).
 const claseDev = d => d?.online === true ? 'on' : d?.online === false ? 'off' : 'nd';
+const enumerar = xs => xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} y ${xs.at(-1)}`;
 
 function tarjetaEquipo(d, nombre) {
   const c = claseDev(d);
   const st = c === 'on' ? 'Encendido' : c === 'off' ? 'Apagado' : 'Sin datos';
-  const titulo = d ? `${d.host} · ${st}${d.online != null ? ' ' + hace(d.desde) : ''}` : '';
-  return `<div class="eq ${c}" title="${esc(titulo)}">${SVG[d?.tipo] || SVG.equipo}<span class="n">${esc(nombre)}</span><span class="st">${st}</span></div>`;
+  const titulo = d ? `${d.host}${d.online != null ? `, ${st.toLowerCase()} ${hace(d.desde)}` : ''}` : '';
+  return `<div class="eq ${c}" title="${esc(titulo)}">${SVG[d?.tipo] || SVG.equipo}<span class="n">${esc(nombre)}</span><span class="st"><span class="led ${c}"></span>${st}</span></div>`;
 }
 
 function tarjetaPC(m, devs) {
   const c = m.online ? 'on' : (m.detenido || m.nuncaConectada) ? 'nd' : 'off';
-  const pill = m.online ? 'Encendida' : m.detenido ? 'Monitor cerrado' : m.nuncaConectada ? 'Sin agente' : 'Apagada';
-  const sub = m.online
-    ? `Encendida desde las ${horaCorta(m.bootTime)}${m.usuario ? ' · ' + esc(m.usuario.split('\\').pop()) : ''}`
-    : m.detenido ? `Cerraron el monitor ${hace(m.detenido.ts)}${m.detenido.por ? ' (' + esc(m.detenido.por) + ')' : ''}`
-    : m.nuncaConectada ? 'Todavía no se instaló el agente'
-    : `Apagada · última señal ${hace(m.lastSeen)}`;
+  const estado = m.online ? 'Encendida' : m.detenido ? 'Monitor cerrado' : m.nuncaConectada ? 'Sin agente' : 'Apagada';
+  const usuario = m.usuario ? `, usuario ${esc(m.usuario.split('\\').pop())}` : '';
+  const sub = m.online ? `Desde las ${horaCorta(m.bootTime)}${usuario}`
+    : m.detenido ? `Lo cerraron ${hace(m.detenido.ts)}${m.detenido.por ? ` (${esc(m.detenido.por)})` : ''}. No se sabe si está prendida.`
+    : m.nuncaConectada ? 'Todavía no se instaló el agente en esta compu.'
+    : `Última señal ${hace(m.lastSeen)}`;
   const apps = (m.vigilar || []).map(n => {
     const ca = !m.online ? 'nd' : (m.programas || []).includes(n) ? 'on' : 'off';
-    return `<li class="app ${ca}"><span class="led"></span><span class="n">${esc(n)}</span><span class="st">${ca === 'on' ? 'Abierto' : ca === 'off' ? 'Cerrado' : '—'}</span></li>`;
+    return `<li class="${ca}"><span class="led"></span><span class="n">${esc(n)}</span><span class="st">${ca === 'on' ? 'Abierto' : ca === 'off' ? 'Cerrado' : '—'}</span></li>`;
   }).join('');
   const equipos = (m.dispositivos || []).map(n => tarjetaEquipo(devs[n], n)).join('');
-  return `<article class="pc ${c} ${m.online && m.fueraDeHorario ? 'fuera' : ''}">
-    <div class="cab">
-      <div class="ico">${SVG.pc}</div>
-      <div class="txt"><h3>${esc(m.alias || m.id)}</h3><div class="sub">${sub}</div></div>
-      <span class="pill">${pill}</span>
-    </div>
-    ${m.online && m.fueraDeHorario ? '<div class="nota rojo">🚨 Encendida fuera de horario</div>' : ''}
-    ${m.online ? (m.remotos || []).map(r => `<div class="nota naranja">🖥️ Conexión remota: ${esc(r)}</div>`).join('') : ''}
-    ${m.online && m.elevado === false ? '<div class="nota naranja">⚠️ El agente no tiene permisos de administrador: no detecta AnyDesk. Reinstalalo.</div>' : ''}
-    ${apps ? `<div class="bloque"><div class="bt">Programas</div><ul class="apps">${apps}</ul></div>` : ''}
-    ${equipos ? `<div class="bloque"><div class="bt">Equipos</div><div class="equipos">${equipos}</div></div>` : ''}
+  return `<article class="mod ${c} ${m.online && m.fueraDeHorario ? 'fuera' : ''}">
+    <div class="mod-cab"><span class="lamp"></span><h3>${esc(m.alias || m.id)}</h3><span class="estado">${estado}</span></div>
+    <p class="mod-sub">${sub}</p>
+    ${m.online && m.fueraDeHorario ? '<p class="aviso rojo">Encendida fuera de horario</p>' : ''}
+    ${m.online ? (m.remotos || []).map(r => `<p class="aviso ambar">Conexión remota: ${esc(r)}</p>`).join('') : ''}
+    ${m.online && m.elevado === false ? '<p class="aviso ambar">El agente no tiene permisos de administrador y no detecta AnyDesk. Reinstalalo.</p>' : ''}
+    ${apps ? `<ul class="leds" aria-label="Programas">${apps}</ul>` : ''}
+    ${equipos ? `<div class="equipos" aria-label="Equipos">${equipos}</div>` : ''}
     ${m.online ? `<details class="procs" data-equipo="${esc(m.id)}" ${procsAbiertos.has(m.id) ? 'open' : ''}>
-      <summary>Ver todos los procesos de esta compu</summary><div class="lista">cargando…</div></details>` : ''}
+      <summary>Ver todos los procesos</summary><div class="lista">cargando…</div></details>` : ''}
   </article>`;
+}
+
+// La frase grande de arriba: responde "¿está todo bien?" sin tener que leer las tarjetas.
+function estadoGeneral(st, devs) {
+  const ms = st.machines;
+  const encendidas = ms.filter(m => m.online);
+  const fuera = encendidas.filter(m => m.fueraDeHorario).map(m => m.alias);
+  let clase, titulo;
+  if (fuera.length) {
+    clase = 'off';
+    titulo = `${enumerar(fuera)} ${fuera.length > 1 ? 'están encendidas' : 'está encendida'} fuera de horario`;
+  } else if (encendidas.length) {
+    clase = 'on'; titulo = 'Todo en orden';
+  } else {
+    clase = 'nd'; titulo = 'Todo apagado';
+  }
+  const lineas = [];
+  for (const m of encendidas) for (const r of m.remotos || []) lineas.push(['ambar', `Conexión remota a ${m.alias}: ${r}`]);
+  for (const m of ms.filter(m => m.detenido)) lineas.push(['ambar', `En ${m.alias} cerraron el monitor`]);
+  const enHorario = encendidas.find(m => m.horarioActual)?.horarioActual;
+  const proys = st.devices.filter(d => d.tipo === 'proyector');
+  const partes = [`${encendidas.length} de ${ms.length} compus encendidas`];
+  if (proys.length) partes.push(`${proys.filter(d => d.online === true).length} de ${proys.length} proyectores`);
+  lineas.push(['', partes.join(', ') + (enHorario ? `. En horario: ${enHorario}.` : '.')]);
+  $('estadoGeneral').className = `estado-general ${clase}`;
+  $('estadoGeneral').innerHTML = `<p class="titulo">${esc(titulo)}</p>` +
+    lineas.map(([c, t]) => `<p class="linea ${c}">${esc(t)}</p>`).join('');
 }
 
 function renderState(st) {
   last = st;
   zona = st.zonaHoraria || undefined;
   const devs = Object.fromEntries(st.devices.map(d => [d.nombre, d]));
-
-  // Alertas activas arriba de todo.
-  const alertas = [];
-  for (const m of st.machines) {
-    if (m.online && m.fueraDeHorario) alertas.push(['', `🚨 ${m.alias} está encendida fuera de horario`]);
-    if (m.online) for (const r of m.remotos || []) alertas.push(['aviso', `🖥️ ${m.alias}: conexión remota (${r})`]);
-    if (m.detenido) alertas.push(['aviso', `⏸️ En ${m.alias} cerraron el monitor`]);
-  }
-  $('alertas').innerHTML = alertas.length
-    ? alertas.map(([c, t]) => `<div class="alerta ${c}">${esc(t)}</div>`).join('')
-    : '<div class="alerta ok">✓ Sin alertas</div>';
+  estadoGeneral(st, devs);
 
   $('sala').innerHTML = st.machines.length
     ? st.machines.map(m => tarjetaPC(m, devs)).join('')
@@ -255,7 +283,7 @@ function renderState(st) {
   $('otros').innerHTML = otros.map(d => tarjetaEquipo(d, d.nombre)).join('');
 
   $('horarios').innerHTML = st.horarios.map(h =>
-    `${esc(h.nombre)}: ${h.dias.map(esc).join(', ')} de ${esc(h.desde)} a ${esc(h.hasta)}`).join('<br>');
+    `<li><b>${esc(h.nombre)}</b>: ${h.dias.map(esc).join(', ')} de ${esc(h.desde)} a ${esc(h.hasta)}</li>`).join('');
 }
 
 // Lista completa de procesos de una PC: sirve para saber qué nombre poner en "programas" del config.
@@ -275,9 +303,9 @@ async function loadEvents() {
 function connect() {
   const es = new EventSource('api/stream');
   let primero = true;
-  es.onopen = () => { $('conn').className = 'dot on'; $('connTxt').textContent = 'en vivo'; primero = true; };
+  es.onopen = () => { $('conn').className = 'led on'; $('connTxt').textContent = 'en vivo'; primero = true; };
   es.onerror = () => {
-    $('conn').className = 'dot off'; $('connTxt').textContent = 'reconectando…';
+    $('conn').className = 'led off'; $('connTxt').textContent = 'reconectando…';
     api('api/estado').catch(() => {}); // si la sesión venció, lleva al login
   };
   es.addEventListener('estado', e => {
