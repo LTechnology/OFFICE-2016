@@ -9,25 +9,25 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Técnica">
-<meta name="theme-color" content="#0f1218">
+<meta name="theme-color" content="#eef1f6">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600&family=Barlow+Semi+Condensed:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;800&display=swap" rel="stylesheet">
 <style>
-  :root { --rack: #e6e8eb; --panel: #f8f9fa; --text: #15191e; --muted: #5d6671; --line: #d5d9de; --accent: #1f5fd1; --off: #d63a31;
-    --display: 'Barlow Semi Condensed', 'Arial Narrow', system-ui, sans-serif; --body: 'Barlow', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
-  @media (prefers-color-scheme: dark) { :root { --rack: #1b1f25; --panel: #242a32; --text: #e8eaed; --muted: #9ba4af; --line: #363e49; --accent: #82b8ff; --off: #ff5c53; } }
+  :root { --fondo: #eef1f6; --tarjeta: #fff; --texto: #262b38; --tenue: #8a91a3; --linea: #e3e7ee; --azul: #3b7cf6; --rojo: #f0465a;
+    --sombra: 0 6px 24px rgba(31, 45, 80, .07), 0 1px 3px rgba(31, 45, 80, .05); }
+  @media (prefers-color-scheme: dark) { :root { --fondo: #151923; --tarjeta: #1e2330; --texto: #eef0f5; --tenue: #8f97aa; --linea: #2a3040; --azul: #6b9dff; --rojo: #ff5f71; --sombra: 0 6px 24px rgba(0,0,0,.25); } }
   * { box-sizing: border-box; }
   body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px;
-    font: 16px/1.45 var(--body); background: var(--rack); color: var(--text); }
-  form { width: 100%; max-width: 340px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 24px; display: grid; gap: 14px; }
-  img { width: 52px; height: 52px; border-radius: 12px; }
-  h1 { font: 700 30px/1.05 var(--display); margin: 0; }
-  label { font-size: 15px; color: var(--muted); display: grid; gap: 6px; }
-  input { font: inherit; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--rack); color: var(--text); }
-  button { font: 600 16px var(--body); padding: 11px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; cursor: pointer; }
-  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .error { color: var(--off); font-size: 15px; margin: 0; }
+    font: 15px/1.45 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: var(--fondo); color: var(--texto); }
+  form { width: 100%; max-width: 360px; background: var(--tarjeta); border-radius: 16px; box-shadow: var(--sombra); padding: 28px; display: grid; gap: 16px; }
+  img { width: 48px; height: 48px; border-radius: 12px; }
+  h1 { font-size: 24px; font-weight: 800; margin: 0; letter-spacing: -.01em; }
+  label { font-size: 13px; font-weight: 600; color: var(--tenue); display: grid; gap: 6px; }
+  input { font: inherit; font-size: 16px; padding: 11px 14px; border-radius: 10px; border: 1.5px solid var(--linea); background: var(--fondo); color: var(--texto); }
+  button { font: inherit; font-weight: 600; font-size: 15px; padding: 12px; border: 0; border-radius: 10px; background: var(--azul); color: #fff; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
+  .error { color: var(--rojo); font-size: 14px; font-weight: 600; margin: 0; }
 </style>
 </head>
 <body>

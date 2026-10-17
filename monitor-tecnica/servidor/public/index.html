@@ -11,263 +11,377 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Técnica">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0f1218">
+<meta name="theme-color" content="#eef1f6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151923" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  /* Lenguaje visual de la cabina: módulos de rack con LEDs de estado.
-     Verde = encendido/abierto, rojo = apagado/cerrado, gris = sin datos. */
+  /* Estilo de dashboard claro (referencia que eligió el equipo): fondo gris azulado, tarjetas blancas
+     con sombra suave, números grandes, íconos en círculos de color suave y un solo azul de marca.
+     Estados: verde = prendido/abierto, rojo = apagado/cerrado, gris = sin datos. */
   :root {
-    --rack: #e6e8eb; --panel: #f8f9fa; --panel-2: #eef0f2; --line: #d5d9de; --text: #15191e; --muted: #5d6671;
-    --on: #13a150; --off: #d63a31; --nd: #a5adb7; --amber: #b56a00; --accent: #1f5fd1;
-    --display: 'Barlow Semi Condensed', 'Arial Narrow', system-ui, sans-serif;
-    --body: 'Barlow', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --fondo: #eef1f6; --tarjeta: #ffffff; --texto: #262b38; --tenue: #8a91a3; --linea: #eceff4;
+    --azul: #3b7cf6; --azul-suave: #e8f0fe;
+    --verde: #1fb36b; --verde-suave: #e3f7ec; --rojo: #f0465a; --rojo-suave: #fde8eb;
+    --gris: #c4c9d4; --gris-suave: #f1f3f7; --ambar: #f29b11; --ambar-suave: #fef3e0;
+    --sombra: 0 6px 24px rgba(31, 45, 80, .07), 0 1px 3px rgba(31, 45, 80, .05);
+    --haz: #ffe7a3;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --rack: #1b1f25; --panel: #242a32; --panel-2: #2c333c; --line: #363e49; --text: #e8eaed; --muted: #9ba4af;
-      --on: #36d672; --off: #ff5c53; --nd: #66707c; --amber: #ffb22e; --accent: #82b8ff; }
+    :root { --fondo: #151923; --tarjeta: #1e2330; --texto: #eef0f5; --tenue: #8f97aa; --linea: #2a3040;
+      --azul: #6b9dff; --azul-suave: #22304d; --verde: #33cc80; --verde-suave: #183a2a; --rojo: #ff5f71; --rojo-suave: #45202a;
+      --gris: #4c5466; --gris-suave: #262c3a; --ambar: #ffb547; --ambar-suave: #45341a; --sombra: 0 6px 24px rgba(0,0,0,.25); --haz: #fff0bf; }
   }
   * { box-sizing: border-box; }
-  body { margin: 0; font: 16px/1.45 var(--body); background: var(--rack); color: var(--text); -webkit-font-smoothing: antialiased; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--fondo); color: var(--texto); font: 15px/1.45 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
   svg { display: block; }
-  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button { font: inherit; }
+  :focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
 
-  /* Barra superior */
-  .barra { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 10px;
-    padding: 10px 16px; padding-top: max(10px, env(safe-area-inset-top));
-    background: color-mix(in srgb, var(--rack) 85%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--line); }
-  .barra img { width: 28px; height: 28px; border-radius: 7px; }
-  .barra h1 { font: 600 19px/1 var(--display); margin: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .live { font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 7px; white-space: nowrap; }
-  .btn { font: 600 15px var(--body); padding: 7px 13px; border-radius: 8px; border: 1px solid var(--line);
-    background: var(--panel); color: var(--text); cursor: pointer; white-space: nowrap; }
-  .btn.primario { background: var(--accent); border-color: var(--accent); color: #fff; }
-  a.btn { text-decoration: none; }
-  .led { width: 9px; height: 9px; border-radius: 50%; background: var(--nd); display: inline-block; flex: none; }
-  .on > .led, .led.on { background: var(--on); box-shadow: 0 0 8px color-mix(in srgb, var(--on) 70%, transparent); }
-  .off > .led, .led.off { background: var(--off); box-shadow: 0 0 8px color-mix(in srgb, var(--off) 60%, transparent); }
+  /* Estructura: barra lateral (compu) / barra inferior (celular) + contenido */
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+  .lateral { background: var(--tarjeta); box-shadow: var(--sombra); padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; align-self: start; }
+  .marca { display: flex; align-items: center; gap: 10px; padding: 0 8px 20px; font-weight: 800; font-size: 16px; }
+  .marca img { width: 34px; height: 34px; border-radius: 9px; }
+  .nav { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 10px; border: 0; background: none; color: var(--tenue);
+    font-weight: 600; cursor: pointer; text-align: left; text-decoration: none; width: 100%; }
+  .nav svg { width: 20px; height: 20px; flex: none; }
+  .nav.activa { background: var(--azul-suave); color: var(--azul); }
+  .nav .cuenta { margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--rojo); color: #fff; font-size: 12px; display: grid; place-items: center; }
+  .lateral .abajo { margin-top: auto; display: grid; gap: 4px; }
 
-  main { max-width: 1180px; margin: 0 auto; padding: 20px 16px; padding-bottom: max(32px, env(safe-area-inset-bottom)); display: grid; gap: 28px; }
-  h2 { font: 600 21px/1.2 var(--display); margin: 0 0 12px; }
+  .contenido { padding: 24px 28px 32px; max-width: 1280px; width: 100%; }
+  .cabecera { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+  .cabecera .txt { flex: 1; min-width: 0; }
+  .cabecera h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -.01em; }
+  .cabecera .sub { margin: 2px 0 0; color: var(--tenue); font-weight: 500; }
+  .cabecera .sub.rojo { color: var(--rojo); font-weight: 600; }
+  .vivo { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: var(--tarjeta); box-shadow: var(--sombra);
+    font-size: 13px; font-weight: 600; color: var(--tenue); white-space: nowrap; }
+  .punto { width: 8px; height: 8px; border-radius: 50%; background: var(--gris); }
+  .punto.on { background: var(--verde); box-shadow: 0 0 0 4px var(--verde-suave); } .punto.off { background: var(--rojo); }
+  .btn { padding: 9px 16px; border-radius: 10px; border: 0; background: var(--gris-suave); color: var(--texto); font-weight: 600; cursor: pointer; }
+  .btn.primario { background: var(--azul); color: #fff; }
 
-  /* Estado general: lo primero que se lee */
-  .estado-general { display: grid; gap: 6px; }
-  .estado-general .titulo { font: 700 clamp(30px, 5vw, 46px)/1.05 var(--display); letter-spacing: -.01em; margin: 0; }
-  .estado-general.off .titulo { color: var(--off); }
-  .estado-general.on .titulo { color: var(--on); }
-  .estado-general .linea { margin: 0; color: var(--muted); font-size: 17px; }
-  .estado-general .linea.ambar { color: var(--amber); font-weight: 600; }
+  .tarjeta { background: var(--tarjeta); border-radius: 14px; box-shadow: var(--sombra); padding: 18px 20px; }
+  .tarjeta h2 { margin: 0 0 14px; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .tarjeta h2 .mas { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--azul); background: none; border: 0; cursor: pointer; padding: 0; }
 
-  /* Módulos de PC */
-  .sala { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
-  .mod { --c: var(--nd); position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
-    padding: 16px 16px 14px 22px; display: grid; gap: 12px; align-content: start; overflow: hidden; }
-  .mod::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 6px; background: var(--c); }
-  .mod.on { --c: var(--on); } .mod.off { --c: var(--off); }
-  .mod.fuera { border-color: var(--off); }
-  .mod-cab { display: flex; align-items: center; gap: 12px; }
-  .lamp { width: 16px; height: 16px; border-radius: 50%; flex: none; background: var(--c);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 18%, transparent), 0 0 16px color-mix(in srgb, var(--c) 55%, transparent); }
-  .mod.nd .lamp { box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 18%, transparent); }
-  .mod-cab h3 { font: 700 28px/1 var(--display); margin: 0; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .mod-cab .estado { font: 600 17px/1 var(--display); color: var(--c); white-space: nowrap; }
-  .mod.nd .mod-cab .estado { color: var(--muted); }
-  .mod-sub { margin: -4px 0 0 28px; font-size: 14px; color: var(--muted); }
-  .aviso { margin: 0; padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 15px; }
-  .aviso.rojo { color: var(--off); background: color-mix(in srgb, var(--off) 12%, transparent); }
-  .aviso.ambar { color: var(--amber); background: color-mix(in srgb, var(--amber) 13%, transparent); }
+  /* Indicadores */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .kpi { display: flex; align-items: center; gap: 14px; }
+  .circ { --c: var(--azul); --s: var(--azul-suave); width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: var(--s); color: var(--c); flex: none; }
+  .circ svg { width: 22px; height: 22px; }
+  .circ.verde { --c: var(--verde); --s: var(--verde-suave); } .circ.rojo { --c: var(--rojo); --s: var(--rojo-suave); }
+  .circ.gris { --c: var(--tenue); --s: var(--gris-suave); } .circ.ambar { --c: var(--ambar); --s: var(--ambar-suave); }
+  .kpi .num { font-size: 30px; font-weight: 800; line-height: 1.05; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .kpi .num small { font-size: 18px; color: var(--tenue); font-weight: 700; }
+  .kpi .lbl { color: var(--tenue); font-size: 13px; font-weight: 500; }
+  .kpi .det { font-size: 12px; font-weight: 600; margin-top: 2px; }
+  .det.rojo { color: var(--rojo); } .det.verde { color: var(--verde); } .det.ambar { color: var(--ambar); } .det.tenue { color: var(--tenue); }
 
-  .leds { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
-  .leds li { display: flex; align-items: center; gap: 12px; padding: 9px 2px; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 17px; }
-  .leds li .n { flex: 1; }
-  .leds li .st { font-size: 14px; font-weight: 500; color: var(--muted); }
-  .leds li.on .st { color: var(--on); } .leds li.off .st { color: var(--off); }
-  .leds li.nd { color: var(--muted); }
+  /* Fila central: plano + actividad reciente */
+  .medio { display: grid; grid-template-columns: 1.6fr 1fr; gap: 18px; margin-top: 18px; }
+  #plano { display: flex; flex-direction: column; height: calc(100% - 34px); }
+  #plano .escenario { flex: 1; align-content: end; }
+  .escenario { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 14px; background: var(--gris-suave); border-radius: 12px; padding: 10px 14px 12px; position: relative; }
+  .escenario .rot, .cabina .rot { position: absolute; top: 8px; left: 12px; font-size: 12px; font-weight: 600; color: var(--tenue); }
+  .proy { --c: var(--gris); display: grid; justify-items: center; text-align: center; }
+  .proy.on { --c: var(--verde); } .proy.off { --c: var(--rojo); }
+  .pantalla { width: 80%; height: 7px; border-radius: 4px; background: var(--linea); margin-top: 18px; }
+  .proy.on .pantalla { background: var(--haz); box-shadow: 0 0 16px var(--haz); }
+  .haz { width: 80%; height: clamp(46px, 7vw, 84px); }
+  .proy.on .haz { background: linear-gradient(to top, color-mix(in srgb, var(--haz) 85%, transparent), color-mix(in srgb, var(--haz) 10%, transparent));
+    clip-path: polygon(0 0, 100% 0, 54% 100%, 46% 100%); }
+  .proy .cuerpo { width: 52px; height: 32px; border-radius: 9px; display: grid; place-items: center; background: var(--c); color: #fff; }
+  .proy.nd .cuerpo { background: var(--tarjeta); color: var(--tenue); box-shadow: inset 0 0 0 1.5px var(--gris); }
+  .proy .cuerpo svg { width: 28px; height: 28px; }
+  .proy .n { margin-top: 6px; font-weight: 700; font-size: 14px; }
+  .proy .st { font-size: 12px; font-weight: 600; color: var(--c); }
+  .proy.nd .st { color: var(--tenue); }
+  .cabina { position: relative; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 28px 12px 12px; margin-top: 12px;
+    border-radius: 12px; border: 1.5px dashed var(--linea); }
+  .puesto { --c: var(--gris); display: flex; align-items: center; gap: 8px; padding: 7px 12px 7px 7px; border-radius: 999px; background: var(--gris-suave); font-weight: 700; font-size: 14px; }
+  .puesto .ic { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--c); color: #fff; }
+  .puesto .ic svg { width: 16px; height: 16px; }
+  .puesto.on { --c: var(--verde); background: var(--verde-suave); } .puesto.off { --c: var(--rojo); background: var(--rojo-suave); }
+  .puesto.nd .ic { background: var(--tarjeta); color: var(--tenue); box-shadow: inset 0 0 0 1.5px var(--gris); }
+  .puesto.fuera { box-shadow: 0 0 0 2px var(--rojo); }
+  .puesto.chico { font-size: 12px; padding: 5px 10px 5px 5px; } .puesto.chico .ic { width: 22px; height: 22px; } .puesto.chico .ic svg { width: 13px; height: 13px; }
 
-  .equipos { display: flex; flex-wrap: wrap; gap: 6px 18px; }
-  .eq { --c: var(--nd); display: grid; grid-template-columns: auto auto; align-items: center; column-gap: 8px; row-gap: 1px; min-width: 120px; }
-  .eq.on { --c: var(--on); } .eq.off { --c: var(--off); }
-  .eq svg { width: 36px; height: 36px; color: var(--c); grid-row: span 2; }
-  .eq .n { font-weight: 600; font-size: 15px; line-height: 1.15; }
-  .eq .st { font-size: 13px; color: var(--c); display: flex; align-items: center; gap: 5px; }
-  .eq.nd .st { color: var(--muted); }
+  .eventos { display: grid; }
+  .ev { display: flex; gap: 12px; align-items: flex-start; padding: 9px 0; border-top: 1px solid var(--linea); }
+  .ev:first-child { border-top: 0; padding-top: 0; }
+  .ev .circ { width: 32px; height: 32px; } .ev .circ svg { width: 16px; height: 16px; }
+  .ev .txt { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; }
+  .ev .hora { display: block; color: var(--tenue); font-size: 12px; margin-top: 1px; }
 
-  details.procs { font-size: 14px; }
-  details.procs summary { cursor: pointer; color: var(--muted); }
-  details.procs .lista { margin-top: 8px; max-height: 200px; overflow: auto; color: var(--muted); font-size: 13px; columns: 2; }
+  /* Tarjetas de compu */
+  .pcs { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px; margin-top: 18px; }
+  .pc.fuera { box-shadow: var(--sombra), 0 0 0 2px var(--rojo); }
+  .pc-cab { display: flex; align-items: center; gap: 12px; }
+  .pc-cab .txt { flex: 1; min-width: 0; }
+  .pc-cab h3 { margin: 0; font-size: 17px; font-weight: 800; }
+  .pc-cab .sub { color: var(--tenue); font-size: 13px; font-weight: 500; }
+  .badge { font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 999px; white-space: nowrap; }
+  .badge.verde { background: var(--verde-suave); color: var(--verde); } .badge.rojo { background: var(--rojo-suave); color: var(--rojo); }
+  .badge.gris { background: var(--gris-suave); color: var(--tenue); } .badge.ambar { background: var(--ambar-suave); color: var(--ambar); }
+  .avisos { display: grid; gap: 6px; margin-top: 12px; }
+  .aviso { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: 600; }
+  .aviso.rojo { background: var(--rojo-suave); color: var(--rojo); } .aviso.ambar { background: var(--ambar-suave); color: var(--ambar); }
+  .filas { list-style: none; margin: 14px 0 0; padding: 0; }
+  .filas li { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--linea); font-weight: 600; font-size: 14px; }
+  .filas .led { width: 10px; height: 10px; border-radius: 50%; background: var(--gris); flex: none; }
+  .filas li.on .led { background: var(--verde); box-shadow: 0 0 0 3px var(--verde-suave); }
+  .filas li.off .led { background: var(--rojo); box-shadow: 0 0 0 3px var(--rojo-suave); }
+  .filas .n { flex: 1; }
+  .filas .st { font-size: 13px; color: var(--tenue); font-weight: 600; }
+  .filas li.on .st { color: var(--verde); } .filas li.off .st { color: var(--rojo); }
+  .filas li.nd { color: var(--tenue); }
+  .filas .ic { width: 22px; height: 22px; flex: none; color: var(--tenue); }
+  .filas li.on .ic { color: var(--verde); } .filas li.off .ic { color: var(--rojo); }
+  details.procs { margin-top: 10px; font-size: 13px; }
+  details.procs summary { cursor: pointer; color: var(--azul); font-weight: 600; }
+  details.procs .lista { margin-top: 8px; padding: 10px 12px; border-radius: 10px; background: var(--gris-suave); max-height: 180px; overflow: auto; color: var(--tenue); font-size: 12px; columns: 2; }
 
-  /* Notificaciones */
-  #notif { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 10px; }
+  /* Vistas Actividad y Horarios */
+  .vista[hidden] { display: none; }
+  .horario { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid var(--linea); font-weight: 600; }
+  .horario:first-child { border-top: 0; padding-top: 0; }
+  .horario span:last-child { color: var(--tenue); font-weight: 500; text-align: right; }
+  #notif { display: grid; gap: 10px; margin-bottom: 18px; }
   #notif p { margin: 0; }
   #notif ol { margin: 0; padding-left: 20px; }
   .acciones { display: flex; gap: 8px; flex-wrap: wrap; }
-  .meta { color: var(--muted); font-size: 14px; }
-
-  /* Registro y horarios */
-  .registro { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-  table { width: 100%; border-collapse: collapse; }
-  td { padding: 9px 14px; border-top: 1px solid var(--line); vertical-align: top; font-size: 15px; }
-  tr:first-child td { border-top: 0; }
-  td.t { white-space: nowrap; color: var(--muted); width: 1%; font-variant-numeric: tabular-nums; }
-  td.i { width: 1%; }
-  .empty { color: var(--muted); padding: 14px; }
-  .horarios { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; color: var(--muted); font-size: 15px; }
-  .horarios b { color: var(--text); font-weight: 600; }
-  .tm { display: none; font-size: 13px; color: var(--muted); }
+  .meta { color: var(--tenue); font-size: 13px; }
+  .vacio { color: var(--tenue); margin: 0; }
+  .inferior { display: none; }
 
   @media (prefers-reduced-motion: no-preference) {
-    .mod.fuera .lamp { animation: latido 1.6s ease-in-out infinite; }
-    @keyframes latido { 50% { opacity: .35; } }
+    .puesto.fuera, .pc.fuera { animation: alerta 1.8s ease-in-out infinite; }
+    @keyframes alerta { 50% { box-shadow: var(--sombra), 0 0 0 2px transparent; } }
   }
-  @media (max-width: 560px) {
-    main { padding: 16px 12px; gap: 24px; }
-    .sala { grid-template-columns: 1fr; }
-    td.t { display: none; } .tm { display: block; }
-    #connTxt, #salir { display: none; }
+  @media (max-width: 1100px) { .kpis { grid-template-columns: repeat(2, 1fr); } .medio { grid-template-columns: 1fr; } }
+  @media (max-width: 760px) {
+    .app { grid-template-columns: 1fr; }
+    .lateral { display: none; }
+    .contenido { padding: 16px 14px 96px; padding-top: max(16px, env(safe-area-inset-top)); }
+    .kpis { gap: 10px; } .tarjeta { padding: 14px 16px; }
+    .kpi { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .kpi .num { font-size: 26px; }
+    .medio, .pcs { gap: 12px; margin-top: 12px; }
+    .vivo span:last-child { display: none; } .vivo { padding: 10px; }
+    .tarjeta.recientes { display: none; } /* en el celular tiene su pestaña abajo */
+    /* Navegación abajo, donde llega el pulgar */
+    .inferior { display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; inset: auto 0 0 0; z-index: 10;
+      background: color-mix(in srgb, var(--tarjeta) 92%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 -1px 0 var(--linea); padding: 6px 6px max(8px, env(safe-area-inset-bottom)); }
+    .inferior .nav { flex-direction: column; gap: 3px; font-size: 11px; padding: 6px 2px; text-align: center; justify-content: center; position: relative; }
+    .inferior .nav.activa { background: none; }
+    .inferior .nav .cuenta { position: absolute; top: 2px; left: calc(50% + 6px); margin: 0; }
   }
 </style>
 </head>
 <body>
-<header class="barra">
-  <img src="/icono-192.png" alt="">
-  <h1>Monitor de Técnica</h1>
-  <span class="live"><span id="conn" class="led"></span><span id="connTxt">conectando…</span></span>
-  <button class="btn" id="btnNotif" type="button" aria-label="Notificaciones">🔔</button>
-  <a class="btn" id="salir" href="/logout">Salir</a>
-</header>
-<main>
-  <section id="notifSection" hidden>
-    <h2>Notificaciones en este dispositivo</h2>
-    <div id="notif"></div>
-  </section>
+<div class="app">
+  <aside class="lateral">
+    <div class="marca"><img src="/icono-192.png" alt="">Técnica</div>
+    <button class="nav activa" data-vista="panel" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Panel</button>
+    <button class="nav" data-vista="actividad" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Actividad</button>
+    <button class="nav" data-vista="horarios" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Horarios</button>
+    <div class="abajo">
+      <button class="nav" id="btnNotif" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 0 0 4 0"/></svg><span id="txtNotif">Notificaciones</span></button>
+      <a class="nav" href="/logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg>Salir</a>
+    </div>
+  </aside>
 
-  <section class="estado-general" id="estadoGeneral" aria-live="polite"></section>
+  <div class="contenido">
+    <header class="cabecera">
+      <div class="txt"><h1 id="titulo">Panel</h1><p class="sub" id="subtitulo">Conectando…</p></div>
+      <span class="vivo"><span id="conn" class="punto"></span><span id="connTxt">Conectando</span></span>
+    </header>
 
-  <section id="sala" class="sala" aria-label="Computadoras"></section>
+    <section class="tarjeta" id="notifSection" hidden><h2>Notificaciones en este dispositivo</h2><div id="notif"></div></section>
 
-  <section id="otrosSection" hidden>
-    <h2>Otros equipos en red</h2>
-    <div id="otros" class="equipos"></div>
-  </section>
+    <div class="vista" id="vista-panel">
+      <section class="kpis" id="kpis"></section>
+      <div class="medio">
+        <section class="tarjeta"><h2>Sala</h2><div id="plano"></div></section>
+        <section class="tarjeta recientes"><h2>Actividad reciente <button class="mas" data-vista="actividad" type="button">Ver todo</button></h2><div class="eventos" id="recientes"></div></section>
+      </div>
+      <div class="pcs" id="pcs"></div>
+      <section class="tarjeta" id="otrosSection" hidden style="margin-top:18px"><h2>Otros equipos</h2><ul class="filas" id="otros"></ul></section>
+    </div>
 
-  <section>
-    <h2>Actividad</h2>
-    <div class="registro"><table><tbody id="events"></tbody></table></div>
-  </section>
+    <div class="vista" id="vista-actividad" hidden>
+      <section class="tarjeta"><h2>Actividad</h2><div class="eventos" id="events"></div></section>
+    </div>
 
-  <section>
-    <h2>Horarios permitidos</h2>
-    <ul id="horarios" class="horarios"></ul>
-  </section>
-</main>
+    <div class="vista" id="vista-horarios" hidden>
+      <section class="tarjeta"><h2>Horarios permitidos</h2><p class="meta" style="margin:-6px 0 12px">Fuera de estos horarios, una compu o un equipo prendido genera una alerta.</p><div id="horarios"></div></section>
+    </div>
+  </div>
+</div>
+
+<nav class="inferior" aria-label="Secciones">
+  <button class="nav activa" data-vista="panel" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Panel<span class="cuenta" id="cuentaMovil" hidden></span></button>
+  <button class="nav" data-vista="actividad" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Actividad</button>
+  <button class="nav" data-vista="horarios" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Horarios</button>
+  <button class="nav" id="btnNotifMovil" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 0 0 4 0"/></svg>Avisos</button>
+</nav>
 <script>
-const ICONOS = { encendido: '🟢', apagado: '⚪', sin_senal: '🟠', programa_abierto: '▶️', programa_cerrado: '⏹️', fuera_de_horario: '🚨', dispositivo: '🔌',
-  remoto_conectado: '🖥️', remoto_desconectado: '🖥️', monitor_detenido: '⏸️', monitor_reanudado: '▶️' };
+const trazo = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 const SVG = {
-  pc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',
-  proyector: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="9" rx="2.5"/><circle cx="15.5" cy="12.5" r="2.6"/><path d="M5.5 11h3.5M5.5 14h3.5M6 17v2M18 17v2"/></svg>',
-  atem: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><rect x="4.5" y="9" width="3" height="3" rx=".6"/><rect x="8.5" y="9" width="3" height="3" rx=".6"/><rect x="12.5" y="9" width="3" height="3" rx=".6"/><path d="M18.5 9v6M4.5 15h11"/></svg>',
-  equipo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"/></svg>',
+  pc: trazo('<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>'),
+  app: trazo('<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M10 8.5l5 3.5-5 3.5z" fill="currentColor"/>'),
+  proyector: trazo('<rect x="2" y="8" width="20" height="9" rx="2.5"/><circle cx="15.5" cy="12.5" r="2.6"/><path d="M5.5 11h3.5M5.5 14h3.5"/>'),
+  atem: trazo('<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10.5h2M10 10.5h2M14 10.5h2M18.5 9v6M6 14.5h10"/>'),
+  equipo: trazo('<path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"/>'),
+  remoto: trazo('<path d="M4 12a8 8 0 0 1 16 0M7.5 12a4.5 4.5 0 0 1 9 0"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>'),
+  alerta: trazo('<path d="M12 3l9.5 17h-19z"/><path d="M12 10v4M12 17.5v.5"/>'),
+  ok: trazo('<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>'),
+  power: trazo('<path d="M12 3v8M6.3 7.5a8 8 0 1 0 11.4 0"/>'),
+  stop: trazo('<rect x="6" y="6" width="12" height="12" rx="2"/>'),
+  pausa: trazo('<path d="M9 5v14M15 5v14"/>'),
+};
+// Ícono y color de cada tipo de evento en la lista de actividad.
+const EVENTO = {
+  encendido: ['verde', 'power'], apagado: ['gris', 'power'], sin_senal: ['ambar', 'alerta'],
+  programa_abierto: ['azul', 'app'], programa_cerrado: ['gris', 'stop'], fuera_de_horario: ['rojo', 'alerta'],
+  dispositivo: ['azul', 'equipo'], remoto_conectado: ['ambar', 'remoto'], remoto_desconectado: ['gris', 'remoto'],
+  monitor_detenido: ['ambar', 'pausa'], monitor_reanudado: ['verde', 'ok'],
 };
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 // Horas en la zona del config (la de la iglesia), no la del dispositivo que mira.
 let zona;
-const hora = iso => iso ? new Date(iso).toLocaleString('es-AR', { timeZone: zona, weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
-const horaCorta = iso => iso ? new Date(iso).toLocaleTimeString('es-AR', { timeZone: zona, hour: '2-digit', minute: '2-digit' }) : '—';
+const hora = iso => iso ? new Date(iso).toLocaleString('es-AR', { timeZone: zona, weekday: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : '—';
+const horaCorta = iso => iso ? new Date(iso).toLocaleTimeString('es-AR', { timeZone: zona, hour: '2-digit', minute: '2-digit', hour12: false }) : '—';
 function hace(iso) {
   if (!iso) return '—';
   const s = Math.max(0, (Date.now() - Date.parse(iso)) / 1000);
   if (s < 60) return 'hace instantes';
   if (s < 3600) return `hace ${Math.round(s / 60)} min`;
-  if (s < 86400) return `hace ${Math.floor(s / 3600)} h ${Math.round(s % 3600 / 60)} min`;
-  return `hace ${Math.floor(s / 86400)} días`;
+  if (s < 86400) { const h = Math.floor(s / 3600); return `hace ${h} ${h === 1 ? 'hora' : 'horas'}`; }
+  const d = Math.floor(s / 86400); return `hace ${d} ${d === 1 ? 'día' : 'días'}`;
 }
 async function api(ruta, opciones) {
   const r = await fetch(ruta, opciones);
   if (r.status === 401) { location.href = '/login'; throw new Error('sesión vencida'); }
   return r;
 }
+const enumerar = xs => xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} y ${xs.at(-1)}`;
+
+// ---------- Vistas (Panel / Actividad / Horarios) ----------
+
+const TITULOS = { panel: 'Panel', actividad: 'Actividad', horarios: 'Horarios' };
+function mostrarVista(v) {
+  for (const k of Object.keys(TITULOS)) $('vista-' + k).hidden = k !== v;
+  document.querySelectorAll('[data-vista].nav').forEach(b => b.classList.toggle('activa', b.dataset.vista === v));
+  $('titulo').textContent = TITULOS[v];
+  scrollTo({ top: 0 });
+}
+document.querySelectorAll('[data-vista]').forEach(b => b.addEventListener('click', () => mostrarVista(b.dataset.vista)));
 
 // ---------- Estado ----------
 
-let last = null;
+let last = null, eventos = [];
 const procsAbiertos = new Set();
 // Estado visual: on (verde), off (rojo), nd (gris: sin datos).
 const claseDev = d => d?.online === true ? 'on' : d?.online === false ? 'off' : 'nd';
-const enumerar = xs => xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} y ${xs.at(-1)}`;
+const clasePC = m => m.online ? 'on' : (m.detenido || m.nuncaConectada) ? 'nd' : 'off';
+const textoDev = c => c === 'on' ? 'Prendido' : c === 'off' ? 'Apagado' : 'Sin datos';
+const color = c => c === 'on' ? 'verde' : c === 'off' ? 'rojo' : 'gris';
 
-function tarjetaEquipo(d, nombre) {
-  const c = claseDev(d);
-  const st = c === 'on' ? 'Encendido' : c === 'off' ? 'Apagado' : 'Sin datos';
-  const titulo = d ? `${d.host}${d.online != null ? `, ${st.toLowerCase()} ${hace(d.desde)}` : ''}` : '';
-  return `<div class="eq ${c}" title="${esc(titulo)}">${SVG[d?.tipo] || SVG.equipo}<span class="n">${esc(nombre)}</span><span class="st"><span class="led ${c}"></span>${st}</span></div>`;
+function kpi(colorC, icono, num, lbl, det, colorDet) {
+  return `<div class="tarjeta kpi"><span class="circ ${colorC}">${icono}</span><div>
+    <div class="num">${num}</div><div class="lbl">${esc(lbl)}</div>${det ? `<div class="det ${colorDet}">${esc(det)}</div>` : ''}</div></div>`;
+}
+
+function indicadores(st) {
+  const ms = st.machines, prendidas = ms.filter(m => m.online);
+  const fuera = prendidas.filter(m => m.fueraDeHorario).map(m => m.alias);
+  const remotos = prendidas.flatMap(m => (m.remotos || []).map(r => `${r.replace(/ desde .*/, '')} en ${m.alias}`));
+  const cerrados = ms.filter(m => m.detenido).map(m => m.alias);
+  const nAlertas = fuera.length + remotos.length + cerrados.length;
+  const proys = st.devices.filter(d => d.tipo === 'proyector');
+  const proysOn = proys.filter(d => d.online === true);
+  const proysOff = proys.filter(d => d.online === false).map(d => d.nombre);
+  const detAlerta = fuera.length ? `${enumerar(fuera)} fuera de horario` : remotos.length ? remotos[0] : cerrados.length ? `Monitor cerrado en ${enumerar(cerrados)}` : 'Todo en orden';
+  $('kpis').innerHTML =
+    kpi(nAlertas ? 'rojo' : 'verde', nAlertas ? SVG.alerta : SVG.ok, nAlertas, nAlertas === 1 ? 'Alerta' : 'Alertas', detAlerta, nAlertas ? 'rojo' : 'verde') +
+    kpi(prendidas.length ? 'verde' : 'gris', SVG.pc, `${prendidas.length}<small>/${ms.length}</small>`, 'Compus prendidas',
+      prendidas.length ? enumerar(prendidas.map(m => m.alias)) : 'Todas apagadas', 'tenue') +
+    kpi(proysOn.length ? 'verde' : 'gris', SVG.proyector, `${proysOn.length}<small>/${proys.length}</small>`, 'Proyectores',
+      proysOff.length && proysOn.length ? `${enumerar(proysOff)} apagado` : proysOn.length ? 'Todos prendidos' : 'Todos apagados', proysOff.length && proysOn.length ? 'rojo' : 'tenue') +
+    kpi(remotos.length ? 'ambar' : 'gris', SVG.remoto, remotos.length, 'Conexiones remotas', remotos.length ? remotos.join(', ') : 'Nadie conectado', remotos.length ? 'ambar' : 'tenue');
+
+  // Subtítulo de la cabecera y contador en la navegación.
+  const sub = $('subtitulo');
+  sub.className = 'sub' + (fuera.length ? ' rojo' : '');
+  const enHorario = prendidas.find(m => m.horarioActual)?.horarioActual;
+  sub.textContent = fuera.length ? `${enumerar(fuera)} ${fuera.length > 1 ? 'están prendidas' : 'está prendida'} fuera de horario`
+    : enHorario ? `En horario: ${enHorario}` : prendidas.length ? 'Todo en orden' : 'Todo apagado';
+  for (const el of [$('cuentaMovil')]) { el.hidden = !nAlertas; el.textContent = nAlertas; }
+}
+
+// Plano: proyectores con su haz sobre la pantalla, y la cabina con las compus.
+function plano(st, devs) {
+  const proys = st.devices.filter(d => d.tipo === 'proyector');
+  const escenario = proys.length ? `<div class="escenario"><span class="rot">Escenario</span>${proys.map(d => {
+    const c = claseDev(d);
+    return `<div class="proy ${c}" title="${esc(d.host)}"><div class="pantalla"></div><div class="haz"></div>
+      <div class="cuerpo">${SVG.proyector}</div><div class="n">${esc(d.nombre)}</div><div class="st">${textoDev(c)}</div></div>`;
+  }).join('')}</div>` : '';
+  const puestos = st.machines.map(m => {
+    const c = clasePC(m);
+    const extras = (m.dispositivos || []).map(n => devs[n]).filter(d => d && d.tipo !== 'proyector')
+      .map(d => `<div class="puesto chico ${claseDev(d)}"><span class="ic">${SVG[d.tipo] || SVG.equipo}</span>${esc(d.nombre)}</div>`).join('');
+    return `<div class="puesto ${c} ${m.online && m.fueraDeHorario ? 'fuera' : ''}"><span class="ic">${SVG.pc}</span>${esc(m.alias)}</div>${extras}`;
+  }).join('');
+  $('plano').innerHTML = `${escenario}<div class="cabina"><span class="rot">Cabina</span>${puestos}</div>`;
+}
+
+function fila(clase, icono, nombre, estado) {
+  return `<li class="${clase}">${icono ? `<span class="ic">${icono}</span>` : '<span class="led"></span>'}<span class="n">${esc(nombre)}</span><span class="st">${esc(estado)}</span></li>`;
 }
 
 function tarjetaPC(m, devs) {
-  const c = m.online ? 'on' : (m.detenido || m.nuncaConectada) ? 'nd' : 'off';
-  const estado = m.online ? 'Encendida' : m.detenido ? 'Monitor cerrado' : m.nuncaConectada ? 'Sin agente' : 'Apagada';
-  const usuario = m.usuario ? `, usuario ${esc(m.usuario.split('\\').pop())}` : '';
-  const sub = m.online ? `Desde las ${horaCorta(m.bootTime)}${usuario}`
-    : m.detenido ? `Lo cerraron ${hace(m.detenido.ts)}${m.detenido.por ? ` (${esc(m.detenido.por)})` : ''}. No se sabe si está prendida.`
-    : m.nuncaConectada ? 'Todavía no se instaló el agente en esta compu.'
-    : `Última señal ${hace(m.lastSeen)}`;
-  const apps = (m.vigilar || []).map(n => {
-    const ca = !m.online ? 'nd' : (m.programas || []).includes(n) ? 'on' : 'off';
-    return `<li class="${ca}"><span class="led"></span><span class="n">${esc(n)}</span><span class="st">${ca === 'on' ? 'Abierto' : ca === 'off' ? 'Cerrado' : '—'}</span></li>`;
-  }).join('');
-  const equipos = (m.dispositivos || []).map(n => tarjetaEquipo(devs[n], n)).join('');
-  return `<article class="mod ${c} ${m.online && m.fueraDeHorario ? 'fuera' : ''}">
-    <div class="mod-cab"><span class="lamp"></span><h3>${esc(m.alias || m.id)}</h3><span class="estado">${estado}</span></div>
-    <p class="mod-sub">${sub}</p>
-    ${m.online && m.fueraDeHorario ? '<p class="aviso rojo">Encendida fuera de horario</p>' : ''}
-    ${m.online ? (m.remotos || []).map(r => `<p class="aviso ambar">Conexión remota: ${esc(r)}</p>`).join('') : ''}
-    ${m.online && m.elevado === false ? '<p class="aviso ambar">El agente no tiene permisos de administrador y no detecta AnyDesk. Reinstalalo.</p>' : ''}
-    ${apps ? `<ul class="leds" aria-label="Programas">${apps}</ul>` : ''}
-    ${equipos ? `<div class="equipos" aria-label="Equipos">${equipos}</div>` : ''}
+  const c = clasePC(m);
+  const fuera = m.online && m.fueraDeHorario;
+  const badge = fuera ? ['rojo', 'Fuera de horario'] : m.online ? ['verde', 'Prendida'] : m.detenido ? ['ambar', 'Monitor cerrado'] : m.nuncaConectada ? ['gris', 'Sin agente'] : ['rojo', 'Apagada'];
+  const sub = m.online ? `Desde las ${horaCorta(m.bootTime)}`
+    : m.detenido ? `Lo cerraron ${hace(m.detenido.ts)}${m.detenido.por ? ` (${esc(m.detenido.por)})` : ''}`
+    : m.nuncaConectada ? 'Falta instalar el agente' : `Apagada ${hace(m.lastSeen)}`;
+  const avisos = [
+    ...(m.online ? (m.remotos || []).map(r => `<div class="aviso ambar">${SVG.remoto.replace('<svg', '<svg width="16" height="16"')}Conexión remota: ${esc(r)}</div>`) : []),
+    ...(m.online && m.elevado === false ? ['<div class="aviso ambar">El agente no detecta AnyDesk: reinstalalo como administrador</div>'] : []),
+  ].join('');
+  const filas = [
+    ...(m.vigilar || []).map(n => { const ca = !m.online ? 'nd' : (m.programas || []).includes(n) ? 'on' : 'off';
+      return fila(ca, '', n, ca === 'on' ? 'Abierto' : ca === 'off' ? 'Cerrado' : '—'); }),
+    ...(m.dispositivos || []).map(n => { const d = devs[n], cd = claseDev(d); return fila(cd, SVG[d?.tipo] || SVG.equipo, n, textoDev(cd)); }),
+  ].join('');
+  return `<section class="tarjeta pc ${fuera ? 'fuera' : ''}">
+    <div class="pc-cab"><span class="circ ${color(c)}">${SVG.pc}</span><div class="txt" title="${m.usuario ? 'Usuario: ' + esc(m.usuario) : ''}"><h3>${esc(m.alias || m.id)}</h3><div class="sub">${sub}</div></div>
+      <span class="badge ${badge[0]}">${badge[1]}</span></div>
+    ${avisos ? `<div class="avisos">${avisos}</div>` : ''}
+    ${filas ? `<ul class="filas">${filas}</ul>` : ''}
     ${m.online ? `<details class="procs" data-equipo="${esc(m.id)}" ${procsAbiertos.has(m.id) ? 'open' : ''}>
-      <summary>Ver todos los procesos</summary><div class="lista">cargando…</div></details>` : ''}
-  </article>`;
-}
-
-// La frase grande de arriba: responde "¿está todo bien?" sin tener que leer las tarjetas.
-function estadoGeneral(st, devs) {
-  const ms = st.machines;
-  const encendidas = ms.filter(m => m.online);
-  const fuera = encendidas.filter(m => m.fueraDeHorario).map(m => m.alias);
-  let clase, titulo;
-  if (fuera.length) {
-    clase = 'off';
-    titulo = `${enumerar(fuera)} ${fuera.length > 1 ? 'están encendidas' : 'está encendida'} fuera de horario`;
-  } else if (encendidas.length) {
-    clase = 'on'; titulo = 'Todo en orden';
-  } else {
-    clase = 'nd'; titulo = 'Todo apagado';
-  }
-  const lineas = [];
-  for (const m of encendidas) for (const r of m.remotos || []) lineas.push(['ambar', `Conexión remota a ${m.alias}: ${r}`]);
-  for (const m of ms.filter(m => m.detenido)) lineas.push(['ambar', `En ${m.alias} cerraron el monitor`]);
-  const enHorario = encendidas.find(m => m.horarioActual)?.horarioActual;
-  const proys = st.devices.filter(d => d.tipo === 'proyector');
-  const partes = [`${encendidas.length} de ${ms.length} compus encendidas`];
-  if (proys.length) partes.push(`${proys.filter(d => d.online === true).length} de ${proys.length} proyectores`);
-  lineas.push(['', partes.join(', ') + (enHorario ? `. En horario: ${enHorario}.` : '.')]);
-  $('estadoGeneral').className = `estado-general ${clase}`;
-  $('estadoGeneral').innerHTML = `<p class="titulo">${esc(titulo)}</p>` +
-    lineas.map(([c, t]) => `<p class="linea ${c}">${esc(t)}</p>`).join('');
+      <summary>Ver todo lo que está corriendo</summary><div class="lista">cargando…</div></details>` : ''}
+  </section>`;
 }
 
 function renderState(st) {
   last = st;
   zona = st.zonaHoraria || undefined;
   const devs = Object.fromEntries(st.devices.map(d => [d.nombre, d]));
-  estadoGeneral(st, devs);
-
-  $('sala').innerHTML = st.machines.length
-    ? st.machines.map(m => tarjetaPC(m, devs)).join('')
-    : '<div class="empty">Todavía no hay computadoras configuradas.</div>';
+  indicadores(st);
+  plano(st, devs);
+  $('pcs').innerHTML = st.machines.length ? st.machines.map(m => tarjetaPC(m, devs)).join('')
+    : '<section class="tarjeta"><p class="vacio">Todavía no hay computadoras configuradas.</p></section>';
   document.querySelectorAll('details.procs').forEach(d => {
     d.addEventListener('toggle', () => {
       d.open ? procsAbiertos.add(d.dataset.equipo) : procsAbiertos.delete(d.dataset.equipo);
@@ -276,14 +390,13 @@ function renderState(st) {
     if (d.open) cargarProcesos(d);
   });
 
-  // Equipos que no pertenecen a ninguna tarjeta de PC.
-  const enTarjetas = new Set(st.machines.flatMap(m => m.dispositivos || []));
-  const otros = st.devices.filter(d => !enTarjetas.has(d.nombre));
+  const enPCs = new Set(st.machines.flatMap(m => m.dispositivos || []));
+  const otros = st.devices.filter(d => !enPCs.has(d.nombre));
   $('otrosSection').hidden = !otros.length;
-  $('otros').innerHTML = otros.map(d => tarjetaEquipo(d, d.nombre)).join('');
+  $('otros').innerHTML = otros.map(d => { const c = claseDev(d); return fila(c, SVG[d.tipo] || SVG.equipo, d.nombre, textoDev(c)); }).join('');
 
   $('horarios').innerHTML = st.horarios.map(h =>
-    `<li><b>${esc(h.nombre)}</b>: ${h.dias.map(esc).join(', ')} de ${esc(h.desde)} a ${esc(h.hasta)}</li>`).join('');
+    `<div class="horario"><span>${esc(h.nombre)}</span><span>${h.dias.map(esc).join(', ')}, ${esc(h.desde)} a ${esc(h.hasta)}</span></div>`).join('');
 }
 
 // Lista completa de procesos de una PC: sirve para saber qué nombre poner en "programas" del config.
@@ -293,30 +406,32 @@ async function cargarProcesos(d) {
 }
 
 function eventRow(e) {
-  return `<tr><td class="t">${hora(e.ts)}</td><td class="i">${ICONOS[e.tipo] || 'ℹ️'}</td><td>${esc(e.mensaje)}<span class="tm">${hora(e.ts)}</span></td></tr>`;
+  const [c, i] = EVENTO[e.tipo] || ['gris', 'ok'];
+  return `<div class="ev"><span class="circ ${c}">${SVG[i]}</span><span class="txt">${esc(e.mensaje)}<span class="hora">${hora(e.ts)}</span></span></div>`;
+}
+function renderEventos() {
+  const html = n => eventos.length ? eventos.slice(0, n).map(eventRow).join('') : '<p class="vacio">Sin actividad todavía.</p>';
+  $('recientes').innerHTML = html(6);
+  $('events').innerHTML = html(200);
 }
 async function loadEvents() {
-  const evs = await api('api/eventos?n=200').then(r => r.json());
-  $('events').innerHTML = evs.length ? evs.map(eventRow).join('') : '<tr><td class="empty">Sin actividad todavía.</td></tr>';
+  eventos = await api('api/eventos?n=200').then(r => r.json());
+  renderEventos();
 }
 
 function connect() {
   const es = new EventSource('api/stream');
   let primero = true;
-  es.onopen = () => { $('conn').className = 'led on'; $('connTxt').textContent = 'en vivo'; primero = true; };
+  es.onopen = () => { $('conn').className = 'punto on'; $('connTxt').textContent = 'En vivo'; primero = true; };
   es.onerror = () => {
-    $('conn').className = 'led off'; $('connTxt').textContent = 'reconectando…';
+    $('conn').className = 'punto off'; $('connTxt').textContent = 'Reconectando';
     api('api/estado').catch(() => {}); // si la sesión venció, lleva al login
   };
   es.addEventListener('estado', e => {
     renderState(JSON.parse(e.data));
     if (primero) { primero = false; loadEvents(); } // después del estado, para ya tener la zona horaria
   });
-  es.addEventListener('evento', e => {
-    const tb = $('events');
-    if (tb.querySelector('.empty')) tb.innerHTML = '';
-    tb.insertAdjacentHTML('afterbegin', eventRow(JSON.parse(e.data)));
-  });
+  es.addEventListener('evento', e => { eventos.unshift(JSON.parse(e.data)); eventos.length = Math.min(eventos.length, 200); renderEventos(); });
 }
 
 // ---------- Notificaciones push ----------
@@ -383,8 +498,8 @@ async function renderNotif(mensaje = '') {
 }
 
 function actualizarBoton(activas) {
-  $('btnNotif').textContent = activas ? '🔔' : '🔕';
-  $('btnNotif').title = activas ? 'Notificaciones activadas' : 'Activar notificaciones';
+  $('txtNotif').textContent = activas ? 'Notificaciones activas' : 'Activar notificaciones';
+  $('btnNotif').classList.toggle('activa', !activas);
 }
 
 async function activar() {
@@ -418,7 +533,7 @@ async function probar() {
   renderNotif(r.ok ? 'Enviada. Debería llegar en unos segundos.' : 'Falló: ' + (await r.json()).error);
 }
 
-$('btnNotif').onclick = () => {
+$('btnNotif').onclick = $('btnNotifMovil').onclick = () => {
   $('notifSection').hidden = !$('notifSection').hidden;
   if (!$('notifSection').hidden) { renderNotif(); scrollTo({ top: 0, behavior: 'smooth' }); }
 };
