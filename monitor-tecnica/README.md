@@ -104,11 +104,29 @@ Ajustes → General → Ítems de inicio.
 ## Conexiones remotas
 
 - **Escritorio remoto de Windows (RDP)**: se detecta siempre, con la IP desde donde se conectan.
-- **TeamViewer, Chrome Remote Desktop, RustDesk, Compartir pantalla de Mac**: vienen configurados
-  en `accesoRemoto`. Se detectan por un proceso que sólo existe mientras hay alguien conectado.
-- **AnyDesk y otros**: los nombres de esos procesos cambian según el programa y la versión. Para
-  averiguarlo, ejecutá en la PC `agente\diagnostico-remoto.ps1`: saca una "foto" de los procesos
-  antes y durante una conexión de prueba, y te dice qué agregar en `accesoRemoto`.
+- **AnyDesk, TeamViewer, Chrome Remote Desktop, RustDesk, Compartir pantalla de Mac**: vienen
+  configurados en `accesoRemoto`. Se detectan por un proceso que sólo existe mientras hay alguien
+  conectado. Para AnyDesk y RustDesk, que usan el mismo programa para todo, el agente informa
+  también el modo con que arrancó cada proceso (por ejemplo `anydesk --service` o `anydesk --backend`).
+- Para AnyDesk, además, el aviso incluye el último ID que se conectó, sacado del registro de
+  conexiones del propio AnyDesk (`C:\ProgramData\AnyDesk\connection_trace.txt`). Requiere AnyDesk
+  **instalado** (no la versión portable).
+
+### Confirmar la detección de AnyDesk (hacerlo una vez)
+
+Los nombres de proceso de AnyDesk no están documentados oficialmente y pueden cambiar entre
+versiones, así que hay que confirmarlos con una prueba:
+
+1. Actualizá AnyDesk a la última versión e instalalo (no lo uses portable).
+2. En la PC, abrí PowerShell **como Administrador** y ejecutá `agente\diagnostico-remoto.ps1`.
+3. Con nadie conectado, presioná Enter. Después conectate por AnyDesk desde otra compu,
+   aceptá la conexión y presioná Enter de nuevo.
+4. El script muestra qué procesos aparecieron durante la sesión (por ejemplo `anydesk --backend`).
+   Si es distinto a lo que está en `accesoRemoto` → AnyDesk, reemplazalo en `config.json` y
+   reiniciá el servidor. Las PCs no hay que tocarlas.
+
+Si no aparece nada nuevo, avisá: hay otras formas de detectarlo (por ejemplo leyendo el
+registro de AnyDesk) que se pueden agregar.
 
 Como el agente informa una vez por minuto, una conexión de menos de un minuto puede pasar
 desapercibida. Si hace falta más precisión, bajá `-IntervaloSegundos` a 30 al instalar.

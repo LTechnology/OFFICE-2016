@@ -6,7 +6,7 @@ function Foto {
   Get-CimInstance Win32_Process | ForEach-Object {
     $n = $_.Name -replace '\.exe$', ''
     $arg = if ($_.CommandLine -match '\s(--?[\w-]+)') { " $($Matches[1])" } else { '' }
-    "$n$arg"
+    "$n$arg".ToLower()
   } | Sort-Object -Unique
 }
 
@@ -22,8 +22,8 @@ if ($nuevos) {
   Write-Host 'Procesos que aparecieron con la conexión remota:' -ForegroundColor Green
   $nuevos | ForEach-Object { Write-Host "   $_" }
   Write-Host ''
-  Write-Host 'Agregá los nombres SIN "--algo" en "accesoRemoto" del config del servidor.'
-  Write-Host 'Si sólo aparecen nombres con "--algo", ese programa necesita un ajuste en el agente.'
+  Write-Host 'Copiá esos nombres tal cual en "accesoRemoto" del config del servidor.'
+  Write-Host 'Los que tienen "--algo" sólo funcionan para AnyDesk y RustDesk; para otros programas usá los nombres sin "--".'
 } else {
   Write-Host 'No apareció ningún proceso nuevo: este programa no se puede detectar por procesos.' -ForegroundColor Yellow
 }

@@ -16,9 +16,10 @@
   ],
 
   "accesoRemoto": [
+    { "nombre": "AnyDesk", "procesos": ["anydesk --backend", "anydeskmsi --backend"] },
     { "nombre": "TeamViewer", "procesos": ["tv_x64", "tv_w32"] },
     { "nombre": "Chrome Remote Desktop", "procesos": ["remoting_desktop"] },
-    { "nombre": "RustDesk", "procesos": ["rustdesk-cm"] },
+    { "nombre": "RustDesk", "procesos": ["rustdesk --cm"] },
     { "nombre": "Compartir pantalla (Mac)", "procesos": ["screensharingd"] }
   ],
 

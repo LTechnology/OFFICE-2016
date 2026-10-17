@@ -221,7 +221,12 @@ function handleHeartbeat(body) {
 
   const remotos = conexionesRemotas(body, procesos);
   m.remotos ??= [];
-  for (const r of remotos) if (!m.remotos.includes(r)) logEvent('remoto_conectado', id, `Se conectaron por remoto a ${nombre}: ${r}`, { remoto: r });
+  const idAnyDesk = /^\d{9,10}$/.test(body.anydeskId) ? body.anydeskId : null;
+  for (const r of remotos) {
+    if (m.remotos.includes(r)) continue;
+    const quien = idAnyDesk && /anydesk/i.test(r) ? ` (último ID de AnyDesk registrado: ${idAnyDesk})` : '';
+    logEvent('remoto_conectado', id, `Se conectaron por remoto a ${nombre}: ${r}${quien}`, { remoto: r });
+  }
   for (const r of m.remotos) if (!remotos.includes(r)) logEvent('remoto_desconectado', id, `Terminó la conexión remota a ${nombre}: ${r}`, { remoto: r });
   m.remotos = remotos;
 

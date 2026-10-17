@@ -60,14 +60,31 @@ function ConexionesRemotas {
   return $lista
 }
 
+# Programas de acceso remoto que usan el mismo .exe para todo y cambian sólo el
+# modo con que arrancan (ej. "anydesk --service" vs. el proceso de la sesión).
+# Se informan como "nombre --modo" para poder reconocer la sesión desde el servidor.
+$conModo = 'anydesk', 'anydeskmsi', 'rustdesk'
 function ProcesosExtra {
-  # RustDesk abre un proceso "--cm" (administrador de conexión) sólo mientras hay alguien conectado.
   $extra = @()
-  if (Get-Process -Name rustdesk) {
-    $cm = Get-CimInstance Win32_Process -Filter "Name='rustdesk.exe'" | Where-Object { $_.CommandLine -like '*--cm*' }
-    if ($cm) { $extra += 'rustdesk-cm' }
+  if (Get-Process -Name $conModo -ErrorAction SilentlyContinue) {
+    $filtro = ($conModo | ForEach-Object { "Name='$_.exe'" }) -join ' OR '
+    Get-CimInstance Win32_Process -Filter $filtro | ForEach-Object {
+      $n = $_.Name -replace '\.exe$', ''
+      $modo = if ($_.CommandLine -match '\s(--?[\w-]+)') { $Matches[1] } else { '(sin modo)' }
+      $extra += "$n $modo".ToLower()
+    }
   }
-  return $extra
+  return @($extra | Sort-Object -Unique)
+}
+
+# Último ID de AnyDesk que se conectó a esta PC (registro propio de AnyDesk).
+function UltimoIdAnyDesk {
+  $archivo = Join-Path $env:ProgramData 'AnyDesk\connection_trace.txt'
+  try {
+    $linea = Get-Content -Tail 20 $archivo -ErrorAction Stop | Where-Object { $_ -match '^\s*Incoming' } | Select-Object -Last 1
+    if ($linea -match '(\d{9,10})\s*$') { return $Matches[1] }
+  } catch {}
+  return $null
 }
 
 $usuario = $null
@@ -88,8 +105,11 @@ while ($true) {
   if ($vuelta % 5 -eq 0) {
     try { $usuario = (Get-CimInstance Win32_ComputerSystem).UserName } catch {}
   }
-  $procesos = @(Get-Process | Select-Object -ExpandProperty ProcessName -Unique) + @(ProcesosExtra)
-  $ok = Enviar @{ equipo = $equipo; inicioSistema = $inicio; usuario = $usuario; procesos = $procesos; remoto = @(ConexionesRemotas) } 8
+  $extra = @(ProcesosExtra)
+  $procesos = @(Get-Process | Select-Object -ExpandProperty ProcessName -Unique) + $extra
+  $datos = @{ equipo = $equipo; inicioSistema = $inicio; usuario = $usuario; procesos = $procesos; remoto = @(ConexionesRemotas) }
+  if ($extra -match '^anydesk') { $datos.anydeskId = UltimoIdAnyDesk }
+  $ok = Enviar $datos 8
 
   $ahora = (Get-Date).ToUniversalTime().ToString('o')
   $estado = @{ ultimoIntento = $ahora; ok = $ok; intervalo = $intervalo }
