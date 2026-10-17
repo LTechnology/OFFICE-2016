@@ -55,7 +55,7 @@ function ConexionesRemotas {
   try {
     Get-NetTCPConnection -LocalPort $puertoRdp -State Established -ErrorAction Stop |
       Select-Object -ExpandProperty RemoteAddress -Unique |
-      ForEach-Object { $lista += @{ tipo = 'Escritorio remoto (RDP)'; desde = $_ } }
+      ForEach-Object { $lista += @{ tipo = 'Escritorio remoto (RDP)'; desde = [string]$_ } }
   } catch {}
   return $lista
 }
@@ -110,7 +110,8 @@ $detenido = $false
 while ($true) {
   if (Test-Path $marcaDetenido) {
     if (-not $detenido) {
-      $quien = (Get-Content $marcaDetenido | Select-Object -First 1)
+      # [string]: en PS 5.1 Get-Content agrega propiedades (PSPath…) que ConvertTo-Json serializa como objeto.
+      $quien = [string](Get-Content $marcaDetenido | Select-Object -First 1)
       Enviar @{ equipo = $equipo; evento = 'detenido'; usuario = $quien } 8 | Out-Null
       $detenido = $true
     }
@@ -120,10 +121,10 @@ while ($true) {
   $detenido = $false
 
   if ($vuelta % 5 -eq 0) {
-    try { $usuario = (Get-CimInstance Win32_ComputerSystem).UserName } catch {}
+    try { $usuario = [string](Get-CimInstance Win32_ComputerSystem).UserName } catch {}
   }
   $extra = @(ProcesosExtra)
-  $procesos = @(Get-Process | Select-Object -ExpandProperty ProcessName -Unique) + $extra
+  $procesos = [string[]]@(Get-Process | Select-Object -ExpandProperty ProcessName -Unique) + [string[]]$extra
   $datos = @{ equipo = $equipo; inicioSistema = $inicio; usuario = $usuario; procesos = $procesos; remoto = @(ConexionesRemotas); elevado = $elevado }
   if ($extra -match '^anydesk') { $datos.anydeskId = UltimoIdAnyDesk }
   $ok = Enviar $datos 8

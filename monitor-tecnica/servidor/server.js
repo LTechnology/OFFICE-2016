@@ -138,6 +138,12 @@ function horarioActivo(id) {
 
 // ---------- Latidos de los agentes ----------
 
+// Sólo acepta texto (o el {value} con que PowerShell 5.1 serializa a veces un string).
+function texto(v, max = 128) {
+  if (v && typeof v === 'object' && typeof v.value === 'string') v = v.value;
+  return typeof v === 'string' ? v.slice(0, max) : '';
+}
+
 function aliasDe(id) { return config.equipos[id]?.alias || id; }
 
 function coincidencias(lista, procesos) {
@@ -151,7 +157,7 @@ function coincidencias(lista, procesos) {
 // acceso remoto que sólo tienen un proceso abierto mientras hay una sesión.
 function conexionesRemotas(body, procesos) {
   const lista = (Array.isArray(body.remoto) ? body.remoto : [])
-    .map(r => r && r.tipo ? `${r.tipo}${r.desde ? ` desde ${r.desde}` : ''}` : null)
+    .map(r => texto(r?.tipo) ? `${texto(r.tipo)}${texto(r.desde) ? ` desde ${texto(r.desde)}` : ''}` : null)
     .filter(Boolean);
   return [...new Set([...lista, ...coincidencias(config.accesoRemoto, procesos)])];
 }
@@ -164,7 +170,7 @@ function limpiar(m) {
 }
 
 function handleHeartbeat(body) {
-  const id = String(body.equipo || '').trim().slice(0, 64);
+  const id = texto(body.equipo, 64).trim();
   if (!id) return { status: 400, body: { error: 'falta equipo' } };
   const nombre = aliasDe(id);
   const m = state.machines[id] ??= { id, programas: [], online: false };
@@ -184,7 +190,7 @@ function handleHeartbeat(body) {
   }
 
   if (body.evento === 'detenido') {
-    const quien = String(body.usuario || '').slice(0, 64);
+    const quien = texto(body.usuario, 64);
     m.online = false;
     m.lastSeen = new Date().toISOString();
     m.detenido = { por: quien || null, ts: m.lastSeen };
@@ -196,25 +202,27 @@ function handleHeartbeat(body) {
     return { status: 200, body: { ok: true } };
   }
 
-  const reinicio = body.inicioSistema && body.inicioSistema !== m.bootTime;
+  const inicio = texto(body.inicioSistema, 40);
+  const inicioValido = inicio && !isNaN(Date.parse(inicio)) ? inicio : '';
+  const reinicio = inicioValido && inicioValido !== m.bootTime;
   const estabaDetenido = !!m.detenido;
   m.online = true;
   m.detenido = null;
   m.lastSeen = new Date().toISOString();
-  m.bootTime = body.inicioSistema || m.bootTime;
-  m.usuario = body.usuario || m.usuario;
+  m.bootTime = inicioValido || m.bootTime;
+  m.usuario = texto(body.usuario) || m.usuario;
   m.elevado = typeof body.elevado === 'boolean' ? body.elevado : null;
 
   if (estabaDetenido && !reinicio) {
     logEvent('monitor_reanudado', id, `El monitor de ${nombre} volvió a funcionar`);
   } else if (!estabaOnline) {
-    const desde = body.inicioSistema
-      ? ` (encendida a las ${new Date(body.inicioSistema).toLocaleTimeString('es-AR', { timeZone: config.zonaHoraria, hour: '2-digit', minute: '2-digit' })})`
+    const desde = inicioValido
+      ? ` (encendida a las ${new Date(inicioValido).toLocaleTimeString('es-AR', { timeZone: config.zonaHoraria, hour: '2-digit', minute: '2-digit' })})`
       : '';
     logEvent('encendido', id, `${nombre} está encendida${desde}`);
   }
 
-  const procesos = Array.isArray(body.procesos) ? body.procesos : [];
+  const procesos = (Array.isArray(body.procesos) ? body.procesos : []).map(p => texto(p)).filter(Boolean);
   const ahora = coincidencias(config.programas, procesos);
   for (const p of ahora) if (!m.programas.includes(p)) logEvent('programa_abierto', id, `${p} se abrió en ${nombre}`, { programa: p });
   for (const p of m.programas) if (!ahora.includes(p)) logEvent('programa_cerrado', id, `${p} se cerró en ${nombre}`, { programa: p });
@@ -340,8 +348,14 @@ const server = http.createServer((req, res) => {
     req.on('end', () => {
       let body;
       try { body = JSON.parse(raw); } catch { return send(res, 400, { error: 'JSON inválido' }); }
-      const r = handleHeartbeat(body);
-      send(res, r.status, r.body);
+      if (!body || typeof body !== 'object') return send(res, 400, { error: 'JSON inválido' });
+      try {
+        const r = handleHeartbeat(body);
+        send(res, r.status, r.body);
+      } catch (e) {
+        console.error('Error procesando latido:', e);
+        send(res, 500, { error: 'error interno' });
+      }
     });
     return;
   }
