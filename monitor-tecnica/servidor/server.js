@@ -1,18 +1,22 @@
 // Monitor de Técnica: servidor central.
 // Recibe "latidos" de los agentes instalados en cada PC, guarda un registro de
-// eventos, evalúa horarios permitidos y manda notificaciones (Telegram / ntfy).
-// Sin dependencias: Node 18+.
+// eventos, evalúa horarios permitidos y manda notificaciones (push a la web app,
+// Telegram, ntfy). Node 18+; única dependencia: web-push (opcional).
 
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { execFile } = require('child_process');
+const crypto = require('crypto');
 
 const DIR = __dirname;
 const CONFIG_PATH = process.env.MONITOR_CONFIG || path.join(DIR, 'config.json');
 const DATA_DIR = path.join(DIR, 'datos');
 const STATE_PATH = path.join(DATA_DIR, 'estado.json');
 const EVENTS_PATH = path.join(DATA_DIR, 'eventos.jsonl');
+const VAPID_PATH = path.join(DATA_DIR, 'vapid.json');
+const SUBS_PATH = path.join(DATA_DIR, 'suscripciones.json');
+const SECRET_PATH = path.join(DATA_DIR, 'secreto');
 
 if (!fs.existsSync(CONFIG_PATH)) {
   console.error(`No existe ${CONFIG_PATH}. Copiá config.ejemplo.json a config.json y editalo.`);
@@ -79,6 +83,14 @@ const ICONOS = {
 
 async function notify(ev) {
   const text = `${ICONOS[ev.tipo] || 'ℹ️'} ${ev.mensaje}`;
+  const urgente = ev.tipo === 'fuera_de_horario' || ev.tipo === 'remoto_conectado' || ev.tipo === 'monitor_detenido';
+  for (const sub of [...suscripciones]) {
+    enviarPush(sub, {
+      title: 'Monitor de Técnica', body: text,
+      // Los recordatorios de "fuera de horario" de un mismo equipo se reemplazan en vez de acumularse.
+      tag: ev.tipo === 'fuera_de_horario' ? `fuera-${ev.equipo}` : undefined,
+    }, urgente ? 'high' : 'normal').catch(() => {});
+  }
   const tg = config.telegram || {};
   if (tg.botToken && tg.chatId) {
     fetch(`https://api.telegram.org/bot${tg.botToken}/sendMessage`, {
@@ -98,6 +110,53 @@ async function notify(ev) {
       body: text,
     }).catch(e => console.error('ntfy:', e.message));
   }
+}
+
+// ---------- Notificaciones push (web app instalada en el celular) ----------
+
+let webpush = null;
+try { webpush = require('web-push'); } catch {
+  console.warn('Falta el paquete "web-push" (ejecutá npm install): las notificaciones push quedan desactivadas.');
+}
+let vapid = null;
+let suscripciones = [];
+if (webpush) {
+  try { vapid = JSON.parse(fs.readFileSync(VAPID_PATH, 'utf8')); } catch {
+    vapid = webpush.generateVAPIDKeys();
+    fs.writeFileSync(VAPID_PATH, JSON.stringify(vapid), { mode: 0o600 });
+  }
+  // Apple rechaza los envíos si el contacto no es un mailto: o https: válido.
+  webpush.setVapidDetails(config.contactoPush || 'mailto:tecnica@example.com', vapid.publicKey, vapid.privateKey);
+  try { suscripciones = JSON.parse(fs.readFileSync(SUBS_PATH, 'utf8')); } catch {}
+}
+
+function guardarSuscripciones() {
+  fs.writeFile(SUBS_PATH, JSON.stringify(suscripciones, null, 2), { mode: 0o600 }, () => {});
+}
+
+function enviarPush(sub, payload, urgency = 'normal') {
+  if (!webpush) return Promise.reject(new Error('push desactivado'));
+  return webpush.sendNotification({ endpoint: sub.endpoint, keys: sub.keys }, JSON.stringify(payload), { TTL: 3600, urgency })
+    .catch(e => {
+      // 404/410: el celular borró la suscripción (desinstaló la app o quitó el permiso).
+      if (e.statusCode === 404 || e.statusCode === 410) {
+        suscripciones = suscripciones.filter(x => x.endpoint !== sub.endpoint);
+        guardarSuscripciones();
+      } else {
+        console.error('Push:', e.statusCode || '', e.body || e.message);
+      }
+      throw e;
+    });
+}
+
+// Sólo servicios de push reales (evita que el servidor haga pedidos a cualquier URL).
+const SERVICIOS_PUSH = ['.googleapis.com', '.push.apple.com', '.mozilla.com', '.notify.windows.com'];
+function suscripcionValida(b) {
+  try {
+    const u = new URL(b.endpoint);
+    return u.protocol === 'https:' && SERVICIOS_PUSH.some(d => u.hostname.endsWith(d)) &&
+      typeof b.keys?.p256dh === 'string' && typeof b.keys?.auth === 'string';
+  } catch { return false; }
 }
 
 // ---------- Horarios ----------
@@ -143,6 +202,9 @@ function texto(v, max = 128) {
   if (v && typeof v === 'object' && typeof v.value === 'string') v = v.value;
   return typeof v === 'string' ? v.slice(0, max) : '';
 }
+
+// Lista completa de procesos de cada PC, sólo en memoria, para "Ver procesos" en el panel.
+const todosLosProcesos = {};
 
 function aliasDe(id) { return config.equipos[id]?.alias || id; }
 
@@ -225,6 +287,7 @@ function handleHeartbeat(body) {
   }
 
   const procesos = (Array.isArray(body.procesos) ? body.procesos : []).map(p => texto(p)).filter(Boolean);
+  todosLosProcesos[id] = [...new Set(procesos)].sort((a, b) => a.localeCompare(b));
   const ahora = coincidencias(config.programas, procesos);
   for (const p of ahora) if (!m.programas.includes(p)) logEvent('programa_abierto', id, `${p} se abrió en ${nombre}`, { programa: p });
   for (const p of m.programas) if (!ahora.includes(p)) logEvent('programa_cerrado', id, `${p} se cerró en ${nombre}`, { programa: p });
@@ -339,10 +402,23 @@ if (config.dispositivos.some(d => !d.pc)) { chequearDispositivos(); setInterval(
 // ---------- HTTP ----------
 
 function publicState() {
+  // Primero las PCs del config (en ese orden, aunque todavía no se hayan conectado), después cualquier otra.
+  const ids = [...new Set([...Object.keys(config.equipos), ...Object.keys(state.machines)])];
   return {
     ahora: new Date().toISOString(),
-    machines: Object.values(state.machines).map(m => ({ ...m, horarios: horariosDe(m.id) })),
-    devices: config.dispositivos.map(d => state.devices[d.nombre]).filter(Boolean),
+    zonaHoraria: config.zonaHoraria || null,
+    machines: ids.map(id => {
+      const m = state.machines[id] || { id, alias: aliasDe(id), online: false, nuncaConectada: true, programas: [], remotos: [] };
+      return {
+        ...m,
+        alias: aliasDe(id),
+        horarios: horariosDe(id),
+        // Programas que se muestran en la tarjeta de esta PC (abiertos o cerrados).
+        vigilar: config.equipos[id]?.programas || config.programas.map(p => p.nombre),
+        dispositivos: dispositivosDe(id).map(d => d.nombre),
+      };
+    }),
+    devices: config.dispositivos.map(d => state.devices[d.nombre] && { ...state.devices[d.nombre], tipo: d.tipo || 'equipo' }).filter(Boolean),
     horarios: config.horarios,
     programas: config.programas.map(p => p.nombre),
   };
@@ -353,44 +429,110 @@ function send(res, status, obj) {
   res.end(JSON.stringify(obj));
 }
 
-function dashboardAuth(req, res) {
+// ---------- Sesión del panel ----------
+// Login con contraseña y cookie (la autenticación básica del navegador no funciona
+// bien en las web apps instaladas en iPhone).
+
+let secreto;
+try { secreto = fs.readFileSync(SECRET_PATH); } catch {
+  secreto = crypto.randomBytes(32);
+  fs.writeFileSync(SECRET_PATH, secreto, { mode: 0o600 });
+}
+const COOKIE = 'mt_sesion';
+const firma = v => crypto.createHmac('sha256', secreto).update(v).digest('base64url');
+// La firma incluye la clave: si se cambia la clave, se cierran todas las sesiones.
+const valorSesion = vence => `${vence}.${firma(`${vence}:${config.claveDashboard}`)}`;
+
+function sesionValida(req) {
   if (!config.claveDashboard) return true;
-  const h = req.headers.authorization || '';
-  const pass = Buffer.from(h.replace(/^Basic /, ''), 'base64').toString().split(':').slice(1).join(':');
-  if (pass === config.claveDashboard) return true;
-  res.writeHead(401, { 'WWW-Authenticate': 'Basic realm="Monitor de Tecnica"' });
-  res.end('Clave requerida');
-  return false;
+  const c = (req.headers.cookie || '').split(';').map(x => x.trim()).find(x => x.startsWith(COOKIE + '='));
+  if (!c) return false;
+  const [vence] = c.slice(COOKIE.length + 1).split('.');
+  if (!(Number(vence) > Date.now())) return false;
+  const a = Buffer.from(c.slice(COOKIE.length + 1)), b = Buffer.from(valorSesion(vence));
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
-const server = http.createServer((req, res) => {
+function cookieSesion(req, valor, maxAge) {
+  const segura = req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : '';
+  return `${COOKIE}=${valor}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${segura}`;
+}
+
+function claveCorrecta(clave) {
+  const a = crypto.createHash('sha256').update(String(clave)).digest();
+  const b = crypto.createHash('sha256').update(String(config.claveDashboard)).digest();
+  return crypto.timingSafeEqual(a, b);
+}
+
+function leerCuerpo(req, max = 1e6) {
+  return new Promise((resolve, reject) => {
+    let raw = '';
+    req.on('data', c => { raw += c; if (raw.length > max) { reject(new Error('muy grande')); req.destroy(); } });
+    req.on('end', () => resolve(raw));
+    req.on('error', reject);
+  });
+}
+
+async function leerJSON(req) {
+  try { const b = JSON.parse(await leerCuerpo(req)); return b && typeof b === 'object' ? b : null; } catch { return null; }
+}
+
+// Archivos públicos: la web app necesita poder pedirlos sin sesión (manifest e íconos).
+const PUBLICOS = {
+  '/login': ['login.html', 'text/html; charset=utf-8'],
+  '/manifest.webmanifest': ['manifest.webmanifest', 'application/manifest+json'],
+  '/sw.js': ['sw.js', 'text/javascript; charset=utf-8'],
+  '/icono-192.png': ['icono-192.png', 'image/png'],
+  '/icono-512.png': ['icono-512.png', 'image/png'],
+  '/apple-touch-icon.png': ['apple-touch-icon.png', 'image/png'],
+};
+
+function servirArchivo(res, archivo, tipo) {
+  res.writeHead(200, { 'Content-Type': tipo, 'Cache-Control': 'no-cache' });
+  fs.createReadStream(path.join(DIR, 'public', archivo)).pipe(res);
+}
+
+async function manejar(req, res) {
   const url = new URL(req.url, 'http://x');
 
   if (req.method === 'POST' && url.pathname === '/api/latido') {
     if (req.headers['x-token'] !== config.token) return send(res, 401, { error: 'token inválido' });
-    let raw = '';
-    req.on('data', c => { raw += c; if (raw.length > 1e6) req.destroy(); });
-    req.on('end', () => {
-      let body;
-      try { body = JSON.parse(raw); } catch { return send(res, 400, { error: 'JSON inválido' }); }
-      if (!body || typeof body !== 'object') return send(res, 400, { error: 'JSON inválido' });
-      try {
-        const r = handleHeartbeat(body);
-        send(res, r.status, r.body);
-      } catch (e) {
-        console.error('Error procesando latido:', e);
-        send(res, 500, { error: 'error interno' });
-      }
-    });
-    return;
+    const body = await leerJSON(req);
+    if (!body) return send(res, 400, { error: 'JSON inválido' });
+    const r = handleHeartbeat(body);
+    return send(res, r.status, r.body);
   }
 
-  if (!dashboardAuth(req, res)) return;
+  if (req.method === 'POST' && url.pathname === '/login') {
+    const clave = new URLSearchParams(await leerCuerpo(req, 10000)).get('clave') || '';
+    if (!config.claveDashboard || claveCorrecta(clave)) {
+      const vence = Date.now() + 365 * 86400000;
+      res.writeHead(303, { Location: '/', 'Set-Cookie': cookieSesion(req, valorSesion(vence), 365 * 86400) });
+      return res.end();
+    }
+    await new Promise(r => setTimeout(r, 1000)); // frena intentos de adivinar la clave
+    res.writeHead(303, { Location: '/login?error=1' });
+    return res.end();
+  }
+  if (url.pathname === '/logout') {
+    res.writeHead(303, { Location: '/login', 'Set-Cookie': cookieSesion(req, '', 0) });
+    return res.end();
+  }
+  if (PUBLICOS[url.pathname]) return servirArchivo(res, ...PUBLICOS[url.pathname]);
+
+  if (!sesionValida(req)) {
+    if (url.pathname.startsWith('/api/')) return send(res, 401, { error: 'sesión requerida' });
+    res.writeHead(302, { Location: '/login' });
+    return res.end();
+  }
 
   if (url.pathname === '/api/estado') return send(res, 200, publicState());
   if (url.pathname === '/api/eventos') {
     const n = Math.min(Number(url.searchParams.get('n')) || 200, 500);
     return send(res, 200, recentEvents.slice(-n).reverse());
+  }
+  if (url.pathname === '/api/procesos') {
+    return send(res, 200, todosLosProcesos[url.searchParams.get('equipo')] || []);
   }
   if (url.pathname === '/api/stream') {
     res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
@@ -400,13 +542,50 @@ const server = http.createServer((req, res) => {
     req.on('close', () => { clearInterval(keep); sseClients.delete(res); });
     return;
   }
-  if (url.pathname === '/' || url.pathname === '/index.html') {
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    return fs.createReadStream(path.join(DIR, 'public', 'index.html')).pipe(res);
+
+  if (url.pathname === '/api/push/config') {
+    return send(res, 200, { disponible: !!vapid, clave: vapid?.publicKey || null });
   }
+  if (req.method === 'POST' && url.pathname === '/api/push/suscribir') {
+    const b = await leerJSON(req);
+    if (!vapid) return send(res, 503, { error: 'push desactivado en el servidor' });
+    if (!b || !suscripcionValida(b)) return send(res, 400, { error: 'suscripción inválida' });
+    suscripciones = suscripciones.filter(x => x.endpoint !== b.endpoint);
+    suscripciones.push({ endpoint: b.endpoint, keys: { p256dh: b.keys.p256dh, auth: b.keys.auth },
+      dispositivo: texto(b.dispositivo, 80), creada: new Date().toISOString() });
+    guardarSuscripciones();
+    return send(res, 200, { ok: true });
+  }
+  if (req.method === 'POST' && url.pathname === '/api/push/desuscribir') {
+    const b = await leerJSON(req);
+    suscripciones = suscripciones.filter(x => x.endpoint !== b?.endpoint);
+    guardarSuscripciones();
+    return send(res, 200, { ok: true });
+  }
+  if (req.method === 'POST' && url.pathname === '/api/push/probar') {
+    const b = await leerJSON(req);
+    const sub = suscripciones.find(x => x.endpoint === b?.endpoint);
+    if (!sub) return send(res, 404, { error: 'este dispositivo no está suscripto' });
+    try {
+      await enviarPush(sub, { title: 'Monitor de Técnica', body: '✅ Las notificaciones funcionan en este dispositivo.' }, 'high');
+      return send(res, 200, { ok: true });
+    } catch (e) {
+      return send(res, 502, { error: `el servicio de push respondió ${e.statusCode || e.message}` });
+    }
+  }
+
+  if (url.pathname === '/' || url.pathname === '/index.html') return servirArchivo(res, 'index.html', 'text/html; charset=utf-8');
   send(res, 404, { error: 'no encontrado' });
+}
+
+const server = http.createServer((req, res) => {
+  manejar(req, res).catch(e => {
+    console.error('Error en', req.method, req.url, e);
+    if (!res.headersSent) send(res, 500, { error: 'error interno' });
+    else res.end();
+  });
 });
 
-server.listen(config.puerto || 8080, () => {
+server.listen(config.puerto || 8080, config.host || undefined, () => {
   console.log(`Monitor de Técnica escuchando en http://localhost:${config.puerto || 8080}`);
 });

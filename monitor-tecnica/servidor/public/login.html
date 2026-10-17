@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Monitor de Técnica</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Técnica">
+<meta name="theme-color" content="#0f1218">
+<style>
+  :root { --bg: #f4f5f7; --card: #fff; --text: #1d2330; --muted: #6b7280; --line: #e5e7eb; --accent: #2563eb; --bad: #dc2626; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0f1218; --card: #181c24; --text: #e6e8ec; --muted: #9aa3b2; --line: #2a303b; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px;
+    font: 16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); color: var(--text); }
+  form { width: 100%; max-width: 340px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 24px; display: grid; gap: 14px; }
+  img { width: 56px; height: 56px; border-radius: 12px; }
+  h1 { font-size: 20px; margin: 0; }
+  label { font-size: 14px; color: var(--muted); display: grid; gap: 6px; }
+  input { font: inherit; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); }
+  button { font: inherit; font-weight: 600; padding: 11px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; cursor: pointer; }
+  .error { color: var(--bad); font-size: 14px; margin: 0; }
+</style>
+</head>
+<body>
+<form method="post" action="/login">
+  <img src="/icono-192.png" alt="">
+  <h1>Monitor de Técnica</h1>
+  <p class="error" id="error" hidden>Clave incorrecta.</p>
+  <label>Clave
+    <input type="password" name="clave" autocomplete="current-password" required autofocus>
+  </label>
+  <button type="submit">Entrar</button>
+</form>
+<script>
+  if (new URLSearchParams(location.search).has('error')) document.getElementById('error').hidden = false;
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "monitor-tecnica-servidor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Servidor del Monitor de Técnica: panel en vivo, alertas y notificaciones push",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "web-push": "3.6.7"
+  }
+}

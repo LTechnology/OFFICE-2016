@@ -2,77 +2,168 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Monitor de Técnica</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icono-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Técnica">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f1218">
 <style>
   :root {
-    --bg: #f4f5f7; --card: #fff; --text: #1d2330; --muted: #6b7280; --line: #e5e7eb;
-    --ok: #16a34a; --off: #9ca3af; --warn: #d97706; --bad: #dc2626; --accent: #2563eb;
+    --bg: #f3f4f6; --card: #ffffff; --card2: #f8f9fb; --text: #111827; --muted: #6b7280; --line: #e5e7eb;
+    --on: #16a34a; --off: #dc2626; --nd: #9ca3af; --warn: #d97706; --accent: #2563eb;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #0f1218; --card: #181c24; --text: #e6e8ec; --muted: #9aa3b2; --line: #2a303b; }
+    :root { --bg: #0b0e13; --card: #151a22; --card2: #1b212b; --text: #e8eaee; --muted: #8b95a5; --line: #252c37;
+      --on: #22c55e; --off: #ef4444; --nd: #6b7280; --warn: #f59e0b; --accent: #60a5fa; }
   }
   * { box-sizing: border-box; }
-  body { margin: 0; font: 15px/1.45 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); color: var(--text); }
-  header { padding: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--line); background: var(--card); }
-  header h1 { font-size: 18px; margin: 0; flex: 1; }
-  .live { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
-  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--off); display: inline-block; flex: none; }
-  .dot.ok { background: var(--ok); } .dot.bad { background: var(--bad); } .dot.warn { background: var(--warn); }
-  main { max-width: 1100px; margin: 0 auto; padding: 16px; display: grid; gap: 20px; }
-  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
-  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
-  .card.alerta { border-color: var(--bad); box-shadow: 0 0 0 1px var(--bad) inset; }
-  .card .top { display: flex; align-items: center; gap: 8px; }
-  .card .name { font-weight: 600; font-size: 16px; flex: 1; overflow: hidden; text-overflow: ellipsis; }
-  .card .estado { font-size: 13px; font-weight: 600; }
-  .meta { color: var(--muted); font-size: 13px; margin-top: 6px; }
-  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-  .chip { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
-  .chip.remoto { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); font-weight: 600; }
-  .banner { margin-top: 10px; font-size: 13px; color: var(--bad); font-weight: 600; }
-  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-  td { padding: 8px 10px; border-top: 1px solid var(--line); vertical-align: top; font-size: 14px; }
+  body { margin: 0; font: 15px/1.45 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+  svg { display: block; }
+
+  /* Encabezado */
+  .barra { position: sticky; top: 0; z-index: 5; padding: 10px 16px; padding-top: max(10px, env(safe-area-inset-top));
+    display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--card) 88%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .barra img { width: 28px; height: 28px; border-radius: 7px; }
+  .barra h1 { font-size: 17px; margin: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .live { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .btn { font: inherit; font-size: 14px; font-weight: 600; padding: 7px 12px; border-radius: 9px; border: 1px solid var(--line);
+    background: var(--card); color: var(--text); cursor: pointer; white-space: nowrap; }
+  .btn.primario { background: var(--accent); border-color: var(--accent); color: #fff; }
+  a.btn { text-decoration: none; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--nd); display: inline-block; flex: none; }
+  .dot.on { background: var(--on); } .dot.off { background: var(--off); }
+
+  main { max-width: 1200px; margin: 0 auto; padding: 16px; padding-bottom: max(24px, env(safe-area-inset-bottom)); display: grid; gap: 22px; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 10px; font-weight: 600; }
+
+  /* Franja de alertas */
+  .alertas { display: grid; gap: 8px; }
+  .alerta { display: flex; gap: 10px; align-items: center; padding: 10px 14px; border-radius: 10px; font-weight: 600; font-size: 14px;
+    background: color-mix(in srgb, var(--off) 14%, var(--card)); color: var(--off); border: 1px solid color-mix(in srgb, var(--off) 35%, transparent); }
+  .alerta.aviso { background: color-mix(in srgb, var(--warn) 14%, var(--card)); color: var(--warn); border-color: color-mix(in srgb, var(--warn) 35%, transparent); }
+  .alerta.ok { background: var(--card); color: var(--muted); border-color: var(--line); font-weight: 500; }
+
+  /* Tarjetas de PC */
+  .sala { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+  .pc { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 14px; align-content: start;
+    --c: var(--nd); border-top: 4px solid var(--c); }
+  .pc.on { --c: var(--on); } .pc.off { --c: var(--off); }
+  .pc.fuera { box-shadow: 0 0 0 2px var(--off); }
+  .cab { display: flex; align-items: center; gap: 12px; }
+  .ico { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; flex: none;
+    background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--c); }
+  .ico svg { width: 30px; height: 30px; }
+  .cab h3 { margin: 0; font-size: 19px; line-height: 1.2; }
+  .sub { font-size: 13px; color: var(--muted); }
+  .cab .txt { flex: 1; min-width: 0; }
+  .pill { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 4px 9px; border-radius: 99px; white-space: nowrap;
+    background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--c); }
+  .pc.nd .pill, .pc.nd .ico { color: var(--muted); }
+  .bloque { display: grid; gap: 8px; }
+  .bt { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+  .apps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .app { --c: var(--nd); display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px; background: var(--card2); font-weight: 600; }
+  .app.on { --c: var(--on); } .app.off { --c: var(--off); }
+  .app .led { width: 10px; height: 10px; border-radius: 50%; background: var(--c); flex: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 22%, transparent); }
+  .app .n { flex: 1; }
+  .app .st { font-size: 12px; font-weight: 600; color: var(--c); }
+  .app.nd { color: var(--muted); } .app.nd .st { color: var(--muted); }
+  .equipos { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); }
+  .eq { --c: var(--nd); display: grid; justify-items: center; gap: 4px; padding: 12px 6px 10px; border-radius: 12px; text-align: center;
+    background: color-mix(in srgb, var(--c) 12%, var(--card2)); border: 1px solid color-mix(in srgb, var(--c) 30%, transparent); }
+  .eq.on { --c: var(--on); } .eq.off { --c: var(--off); }
+  .eq svg { width: 38px; height: 38px; color: var(--c); }
+  .eq .n { font-size: 13px; font-weight: 600; line-height: 1.2; }
+  .eq .st { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--c); }
+  .eq.nd .st { color: var(--muted); }
+  .nota { font-size: 13px; padding: 8px 12px; border-radius: 10px; font-weight: 600; }
+  .nota.rojo { color: var(--off); background: color-mix(in srgb, var(--off) 12%, transparent); }
+  .nota.naranja { color: var(--warn); background: color-mix(in srgb, var(--warn) 14%, transparent); }
+  details.procs { font-size: 13px; border-top: 1px solid var(--line); padding-top: 10px; }
+  details.procs summary { cursor: pointer; color: var(--muted); }
+  details.procs .lista { margin-top: 8px; max-height: 200px; overflow: auto; color: var(--muted); font-family: ui-monospace, Consolas, monospace; font-size: 12px; columns: 2; }
+
+  /* Notificaciones */
+  #notif { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 10px; }
+  #notif p { margin: 0; }
+  #notif ol { margin: 0; padding-left: 20px; }
+  .acciones { display: flex; gap: 8px; flex-wrap: wrap; }
+  .meta { color: var(--muted); font-size: 13px; }
+
+  /* Registro */
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  td { padding: 9px 12px; border-top: 1px solid var(--line); vertical-align: top; font-size: 14px; }
   tr:first-child td { border-top: 0; }
   td.t { white-space: nowrap; color: var(--muted); width: 1%; }
   td.i { width: 1%; }
   .empty { color: var(--muted); padding: 14px; }
   .horarios { font-size: 13px; color: var(--muted); }
   .tm { display: none; font-size: 12px; color: var(--muted); }
-  @media (max-width: 560px) { td.t { display: none; } .tm { display: block; } }
+  @media (max-width: 560px) {
+    main { padding: 12px; gap: 18px; }
+    .sala { grid-template-columns: 1fr; }
+    td.t { display: none; } .tm { display: block; }
+    #connTxt, #salir { display: none; }
+  }
 </style>
 </head>
 <body>
-<header>
+<header class="barra">
+  <img src="/icono-192.png" alt="">
   <h1>Monitor de Técnica</h1>
   <span class="live"><span id="conn" class="dot"></span><span id="connTxt">conectando…</span></span>
+  <button class="btn" id="btnNotif" type="button" aria-label="Notificaciones">🔔</button>
+  <a class="btn" id="salir" href="/logout">Salir</a>
 </header>
 <main>
+  <section id="notifSection" hidden>
+    <h2>Notificaciones en este dispositivo</h2>
+    <div id="notif"></div>
+  </section>
+
+  <section class="alertas" id="alertas"></section>
+
   <section>
-    <h2>Computadoras</h2>
-    <div id="machines" class="grid"></div>
+    <h2>Sala de técnica</h2>
+    <div id="sala" class="sala"></div>
   </section>
-  <section id="devSection" hidden>
-    <h2>Equipos en red</h2>
-    <div id="devices" class="grid"></div>
+
+  <section id="otrosSection" hidden>
+    <h2>Otros equipos en red</h2>
+    <div id="otros" class="equipos"></div>
   </section>
-  <section>
-    <h2>Horarios permitidos</h2>
-    <div id="horarios" class="horarios"></div>
-  </section>
+
   <section>
     <h2>Registro de actividad</h2>
     <table><tbody id="events"></tbody></table>
+  </section>
+
+  <section>
+    <h2>Horarios permitidos</h2>
+    <div id="horarios" class="horarios"></div>
   </section>
 </main>
 <script>
 const ICONOS = { encendido: '🟢', apagado: '⚪', sin_senal: '🟠', programa_abierto: '▶️', programa_cerrado: '⏹️', fuera_de_horario: '🚨', dispositivo: '🔌',
   remoto_conectado: '🖥️', remoto_desconectado: '🖥️', monitor_detenido: '⏸️', monitor_reanudado: '▶️' };
-const AVISOS = ['fuera_de_horario', 'remoto_conectado', 'monitor_detenido'];
+const SVG = {
+  pc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',
+  proyector: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="9" rx="2.5"/><circle cx="15.5" cy="12.5" r="2.6"/><path d="M5.5 11h3.5M5.5 14h3.5M6 17v2M18 17v2"/></svg>',
+  atem: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><rect x="4.5" y="9" width="3" height="3" rx=".6"/><rect x="8.5" y="9" width="3" height="3" rx=".6"/><rect x="12.5" y="9" width="3" height="3" rx=".6"/><path d="M18.5 9v6M4.5 15h11"/></svg>',
+  equipo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"/></svg>',
+};
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const hora = iso => iso ? new Date(iso).toLocaleString('es-AR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+// Horas en la zona del config (la de la iglesia), no la del dispositivo que mira.
+let zona;
+const hora = iso => iso ? new Date(iso).toLocaleString('es-AR', { timeZone: zona, weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+const horaCorta = iso => iso ? new Date(iso).toLocaleTimeString('es-AR', { timeZone: zona, hour: '2-digit', minute: '2-digit' }) : '—';
 function hace(iso) {
   if (!iso) return '—';
   const s = Math.max(0, (Date.now() - Date.parse(iso)) / 1000);
@@ -81,71 +172,246 @@ function hace(iso) {
   if (s < 86400) return `hace ${Math.floor(s / 3600)} h ${Math.round(s % 3600 / 60)} min`;
   return `hace ${Math.floor(s / 86400)} días`;
 }
+async function api(ruta, opciones) {
+  const r = await fetch(ruta, opciones);
+  if (r.status === 401) { location.href = '/login'; throw new Error('sesión vencida'); }
+  return r;
+}
+
+// ---------- Estado ----------
 
 let last = null;
+const procsAbiertos = new Set();
+// Estado visual: on (verde), off (rojo), nd (gris: sin datos).
+const claseDev = d => d?.online === true ? 'on' : d?.online === false ? 'off' : 'nd';
+
+function tarjetaEquipo(d, nombre) {
+  const c = claseDev(d);
+  const st = c === 'on' ? 'Encendido' : c === 'off' ? 'Apagado' : 'Sin datos';
+  const titulo = d ? `${d.host} · ${st}${d.online != null ? ' ' + hace(d.desde) : ''}` : '';
+  return `<div class="eq ${c}" title="${esc(titulo)}">${SVG[d?.tipo] || SVG.equipo}<span class="n">${esc(nombre)}</span><span class="st">${st}</span></div>`;
+}
+
+function tarjetaPC(m, devs) {
+  const c = m.online ? 'on' : (m.detenido || m.nuncaConectada) ? 'nd' : 'off';
+  const pill = m.online ? 'Encendida' : m.detenido ? 'Monitor cerrado' : m.nuncaConectada ? 'Sin agente' : 'Apagada';
+  const sub = m.online
+    ? `Encendida desde las ${horaCorta(m.bootTime)}${m.usuario ? ' · ' + esc(m.usuario.split('\\').pop()) : ''}`
+    : m.detenido ? `Cerraron el monitor ${hace(m.detenido.ts)}${m.detenido.por ? ' (' + esc(m.detenido.por) + ')' : ''}`
+    : m.nuncaConectada ? 'Todavía no se instaló el agente'
+    : `Apagada · última señal ${hace(m.lastSeen)}`;
+  const apps = (m.vigilar || []).map(n => {
+    const ca = !m.online ? 'nd' : (m.programas || []).includes(n) ? 'on' : 'off';
+    return `<li class="app ${ca}"><span class="led"></span><span class="n">${esc(n)}</span><span class="st">${ca === 'on' ? 'Abierto' : ca === 'off' ? 'Cerrado' : '—'}</span></li>`;
+  }).join('');
+  const equipos = (m.dispositivos || []).map(n => tarjetaEquipo(devs[n], n)).join('');
+  return `<article class="pc ${c} ${m.online && m.fueraDeHorario ? 'fuera' : ''}">
+    <div class="cab">
+      <div class="ico">${SVG.pc}</div>
+      <div class="txt"><h3>${esc(m.alias || m.id)}</h3><div class="sub">${sub}</div></div>
+      <span class="pill">${pill}</span>
+    </div>
+    ${m.online && m.fueraDeHorario ? '<div class="nota rojo">🚨 Encendida fuera de horario</div>' : ''}
+    ${m.online ? (m.remotos || []).map(r => `<div class="nota naranja">🖥️ Conexión remota: ${esc(r)}</div>`).join('') : ''}
+    ${m.online && m.elevado === false ? '<div class="nota naranja">⚠️ El agente no tiene permisos de administrador: no detecta AnyDesk. Reinstalalo.</div>' : ''}
+    ${apps ? `<div class="bloque"><div class="bt">Programas</div><ul class="apps">${apps}</ul></div>` : ''}
+    ${equipos ? `<div class="bloque"><div class="bt">Equipos</div><div class="equipos">${equipos}</div></div>` : ''}
+    ${m.online ? `<details class="procs" data-equipo="${esc(m.id)}" ${procsAbiertos.has(m.id) ? 'open' : ''}>
+      <summary>Ver todos los procesos de esta compu</summary><div class="lista">cargando…</div></details>` : ''}
+  </article>`;
+}
+
 function renderState(st) {
   last = st;
-  const ms = st.machines.sort((a, b) => (a.alias || a.id).localeCompare(b.alias || b.id));
-  $('machines').innerHTML = ms.length ? ms.map(m => `
-    <div class="card ${m.online && m.fueraDeHorario ? 'alerta' : ''}">
-      <div class="top">
-        <span class="dot ${m.online ? (m.fueraDeHorario ? 'bad' : 'ok') : ''}"></span>
-        <span class="name">${esc(m.alias || m.id)}</span>
-        <span class="estado" style="color:var(${m.online ? '--ok' : m.detenido ? '--warn' : '--muted'})">${m.online ? 'Encendida' : m.detenido ? 'Monitor cerrado' : 'Apagada'}</span>
-      </div>
-      <div class="meta">${m.online
-        ? `Encendida desde ${hora(m.bootTime)}${m.usuario ? ` · usuario ${esc(m.usuario)}` : ''}`
-        : m.detenido
-          ? `Cerraron el monitor ${hace(m.detenido.ts)}${m.detenido.por ? ` (usuario ${esc(m.detenido.por)})` : ''}. Se desconoce el estado.`
-          : `Última señal ${hace(m.lastSeen)} (${hora(m.lastSeen)})`}</div>
-      ${m.online && m.horarioActual ? `<div class="meta">En horario: ${esc(m.horarioActual)}</div>` : ''}
-      ${m.online && m.elevado === false ? '<div class="meta" style="color:var(--warn)">⚠️ El agente corre sin permisos de administrador: no puede detectar sesiones de AnyDesk. Reinstalalo con instalar.ps1.</div>' : ''}
-      ${m.online && m.remotos?.length ? `<div class="chips">${m.remotos.map(r => `<span class="chip remoto">🖥️ Remoto: ${esc(r)}</span>`).join('')}</div>` : ''}
-      <div class="chips">${(m.programas || []).map(p => `<span class="chip">${esc(p)}</span>`).join('') ||
-        (m.online ? '<span class="meta" style="margin:0">Ningún programa vigilado abierto</span>' : '')}</div>
-      ${m.online && m.fueraDeHorario ? '<div class="banner">🚨 Encendida fuera de horario</div>' : ''}
-    </div>`).join('') : '<div class="card empty">Todavía no se conectó ninguna PC. Instalá el agente en cada computadora.</div>';
+  zona = st.zonaHoraria || undefined;
+  const devs = Object.fromEntries(st.devices.map(d => [d.nombre, d]));
 
-  $('devSection').hidden = !st.devices.length;
-  $('devices').innerHTML = st.devices.map(d => {
-    const est = d.online === true ? ['ok', '--ok', 'En línea'] : d.online === false ? ['', '--muted', 'Apagado'] : ['', '--muted', 'Sin datos'];
-    const detalle = d.online == null
-      ? `Se controla desde ${esc(d.pc)}, que ahora no está informando`
-      : `${d.online ? 'En línea' : 'Apagado'} ${hace(d.desde)}${d.pc ? ` · controlado desde ${esc(d.pc)}` : ''}`;
-    return `<div class="card"><div class="top">
-      <span class="dot ${est[0]}"></span><span class="name">${esc(d.nombre)}</span>
-      <span class="estado" style="color:var(${est[1]})">${est[2]}</span>
-    </div><div class="meta">${esc(d.host)} · ${detalle}</div></div>`;
-  }).join('');
+  // Alertas activas arriba de todo.
+  const alertas = [];
+  for (const m of st.machines) {
+    if (m.online && m.fueraDeHorario) alertas.push(['', `🚨 ${m.alias} está encendida fuera de horario`]);
+    if (m.online) for (const r of m.remotos || []) alertas.push(['aviso', `🖥️ ${m.alias}: conexión remota (${r})`]);
+    if (m.detenido) alertas.push(['aviso', `⏸️ En ${m.alias} cerraron el monitor`]);
+  }
+  $('alertas').innerHTML = alertas.length
+    ? alertas.map(([c, t]) => `<div class="alerta ${c}">${esc(t)}</div>`).join('')
+    : '<div class="alerta ok">✓ Sin alertas</div>';
+
+  $('sala').innerHTML = st.machines.length
+    ? st.machines.map(m => tarjetaPC(m, devs)).join('')
+    : '<div class="empty">Todavía no hay computadoras configuradas.</div>';
+  document.querySelectorAll('details.procs').forEach(d => {
+    d.addEventListener('toggle', () => {
+      d.open ? procsAbiertos.add(d.dataset.equipo) : procsAbiertos.delete(d.dataset.equipo);
+      if (d.open) cargarProcesos(d);
+    });
+    if (d.open) cargarProcesos(d);
+  });
+
+  // Equipos que no pertenecen a ninguna tarjeta de PC.
+  const enTarjetas = new Set(st.machines.flatMap(m => m.dispositivos || []));
+  const otros = st.devices.filter(d => !enTarjetas.has(d.nombre));
+  $('otrosSection').hidden = !otros.length;
+  $('otros').innerHTML = otros.map(d => tarjetaEquipo(d, d.nombre)).join('');
 
   $('horarios').innerHTML = st.horarios.map(h =>
     `${esc(h.nombre)}: ${h.dias.map(esc).join(', ')} de ${esc(h.desde)} a ${esc(h.hasta)}`).join('<br>');
+}
+
+// Lista completa de procesos de una PC: sirve para saber qué nombre poner en "programas" del config.
+async function cargarProcesos(d) {
+  const lista = await api('api/procesos?equipo=' + encodeURIComponent(d.dataset.equipo)).then(r => r.json());
+  d.querySelector('.lista').innerHTML = lista.length ? lista.map(esc).join('<br>') : 'Sin datos todavía.';
 }
 
 function eventRow(e) {
   return `<tr><td class="t">${hora(e.ts)}</td><td class="i">${ICONOS[e.tipo] || 'ℹ️'}</td><td>${esc(e.mensaje)}<span class="tm">${hora(e.ts)}</span></td></tr>`;
 }
 async function loadEvents() {
-  const evs = await fetch('api/eventos?n=200').then(r => r.json());
+  const evs = await api('api/eventos?n=200').then(r => r.json());
   $('events').innerHTML = evs.length ? evs.map(eventRow).join('') : '<tr><td class="empty">Sin actividad todavía.</td></tr>';
 }
 
 function connect() {
   const es = new EventSource('api/stream');
-  es.onopen = () => { $('conn').className = 'dot ok'; $('connTxt').textContent = 'en vivo'; loadEvents(); };
-  es.onerror = () => { $('conn').className = 'dot bad'; $('connTxt').textContent = 'reconectando…'; };
-  es.addEventListener('estado', e => renderState(JSON.parse(e.data)));
+  let primero = true;
+  es.onopen = () => { $('conn').className = 'dot on'; $('connTxt').textContent = 'en vivo'; primero = true; };
+  es.onerror = () => {
+    $('conn').className = 'dot off'; $('connTxt').textContent = 'reconectando…';
+    api('api/estado').catch(() => {}); // si la sesión venció, lleva al login
+  };
+  es.addEventListener('estado', e => {
+    renderState(JSON.parse(e.data));
+    if (primero) { primero = false; loadEvents(); } // después del estado, para ya tener la zona horaria
+  });
   es.addEventListener('evento', e => {
-    const ev = JSON.parse(e.data);
     const tb = $('events');
     if (tb.querySelector('.empty')) tb.innerHTML = '';
-    tb.insertAdjacentHTML('afterbegin', eventRow(ev));
-    if (AVISOS.includes(ev.tipo) && window.Notification?.permission === 'granted') new Notification('Monitor de Técnica', { body: ev.mensaje });
+    tb.insertAdjacentHTML('afterbegin', eventRow(JSON.parse(e.data)));
   });
 }
-if (window.Notification && Notification.permission === 'default') document.addEventListener('click', () => Notification.requestPermission(), { once: true });
+
+// ---------- Notificaciones push ----------
+
+const esIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const instalada = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const soportaPush = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+let registro = null;
+
+function base64AUint8(b64) {
+  const s = atob((b64 + '='.repeat((4 - b64.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from(s, c => c.charCodeAt(0));
+}
+
+function nombreDispositivo() {
+  const ua = navigator.userAgent;
+  const so = /iPhone/.test(ua) ? 'iPhone' : /iPad/.test(ua) || esIOS ? 'iPad' : /Android/.test(ua) ? 'Android' : /Windows/.test(ua) ? 'Windows' : /Mac/.test(ua) ? 'Mac' : 'Otro';
+  const nav = /Edg\//.test(ua) ? 'Edge' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : '';
+  return `${so}${nav ? ' · ' + nav : ''}${instalada ? ' (app)' : ''}`;
+}
+
+async function suscripcionActual() {
+  return registro ? registro.pushManager.getSubscription() : null;
+}
+
+async function renderNotif(mensaje = '') {
+  const el = $('notif');
+  const extra = mensaje ? `<p class="meta" style="margin:0">${esc(mensaje)}</p>` : '';
+  if (!window.isSecureContext) {
+    el.innerHTML = '<p>Las notificaciones necesitan que el panel se abra con <b>https://</b> (en la VPS con dominio).</p>';
+    return actualizarBoton(false);
+  }
+  if (!soportaPush) {
+    el.innerHTML = esIOS && !instalada
+      ? `<p>En iPhone/iPad las notificaciones sólo funcionan con el panel <b>instalado como app</b> (iOS 16.4 o más nuevo):</p>
+         <ol><li>Abrí esta página en <b>Safari</b>.</li><li>Tocá <b>Compartir</b> (el cuadrado con la flecha).</li>
+         <li>Elegí <b>Agregar a inicio</b>.</li><li>Abrí la app <b>Técnica</b> desde la pantalla de inicio y volvé a tocar 🔔.</li></ol>`
+      : '<p>Este navegador no admite notificaciones push. Probá con Chrome, Edge, Firefox o Safari actualizados.</p>';
+    return actualizarBoton(false);
+  }
+  const cfg = await api('api/push/config').then(r => r.json());
+  if (!cfg.disponible) {
+    el.innerHTML = '<p>El servidor no tiene las notificaciones push activadas (falta instalar <code>web-push</code>).</p>';
+    return actualizarBoton(false);
+  }
+  if (Notification.permission === 'denied') {
+    el.innerHTML = `<p>Bloqueaste las notificaciones para este sitio. Para activarlas, habilitalas en los ajustes del
+      ${instalada ? 'teléfono (Ajustes → Notificaciones → Técnica)' : 'navegador (el candado al lado de la dirección)'} y recargá.</p>`;
+    return actualizarBoton(false);
+  }
+  const sub = await suscripcionActual();
+  if (sub) {
+    el.innerHTML = `<p>✅ Este dispositivo recibe las notificaciones.</p>${extra}
+      <div class="acciones"><button class="btn primario" id="nProbar">Mandar una de prueba</button>
+      <button class="btn" id="nDesactivar">Desactivar en este dispositivo</button></div>`;
+    $('nProbar').onclick = probar;
+    $('nDesactivar').onclick = desactivar;
+  } else {
+    el.innerHTML = `<p>Activá las notificaciones para recibir los avisos en este dispositivo aunque el panel esté cerrado.</p>${extra}
+      <div class="acciones"><button class="btn primario" id="nActivar">Activar notificaciones</button></div>`;
+    $('nActivar').onclick = activar;
+  }
+  actualizarBoton(!!sub);
+}
+
+function actualizarBoton(activas) {
+  $('btnNotif').textContent = activas ? '🔔' : '🔕';
+  $('btnNotif').title = activas ? 'Notificaciones activadas' : 'Activar notificaciones';
+}
+
+async function activar() {
+  try {
+    // El pedido de permiso tiene que salir directo del toque en el botón (requisito de iOS).
+    const permiso = await Notification.requestPermission();
+    if (permiso !== 'granted') return renderNotif();
+    const cfg = await api('api/push/config').then(r => r.json());
+    const sub = await registro.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: base64AUint8(cfg.clave) });
+    const r = await api('api/push/suscribir', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...sub.toJSON(), dispositivo: nombreDispositivo() }) });
+    if (!r.ok) throw new Error((await r.json()).error);
+    renderNotif('Listo. Probá mandar una de prueba.');
+  } catch (e) {
+    renderNotif('No se pudo activar: ' + e.message);
+  }
+}
+
+async function desactivar() {
+  const sub = await suscripcionActual();
+  if (sub) {
+    await api('api/push/desuscribir', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) });
+    await sub.unsubscribe();
+  }
+  renderNotif('Desactivadas en este dispositivo.');
+}
+
+async function probar() {
+  const sub = await suscripcionActual();
+  const r = await api('api/push/probar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) });
+  renderNotif(r.ok ? 'Enviada. Debería llegar en unos segundos.' : 'Falló: ' + (await r.json()).error);
+}
+
+$('btnNotif').onclick = () => {
+  $('notifSection').hidden = !$('notifSection').hidden;
+  if (!$('notifSection').hidden) { renderNotif(); scrollTo({ top: 0, behavior: 'smooth' }); }
+};
+
+async function iniciarPush() {
+  if (soportaPush && window.isSecureContext) {
+    registro = await navigator.serviceWorker.register('/sw.js').catch(() => null);
+    await navigator.serviceWorker.ready.catch(() => {});
+  }
+  const sub = await suscripcionActual().catch(() => null);
+  actualizarBoton(!!sub);
+  // Si todavía no las activó, se muestra el recuadro de notificaciones una vez al entrar.
+  if (!sub && (soportaPush || esIOS) && window.Notification?.permission !== 'denied') {
+    $('notifSection').hidden = false;
+    renderNotif();
+  }
+}
+
 setInterval(() => last && renderState(last), 30000);
 connect();
+iniciarPush();
 </script>
 </body>
 </html>

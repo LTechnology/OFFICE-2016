@@ -1,26 +1,39 @@
 {
   "puerto": 8080,
+  "host": "",
   "token": "CAMBIAR-POR-UNA-CLAVE-LARGA",
   "claveDashboard": "",
+  "contactoPush": "mailto:tu-email@ejemplo.com",
   "zonaHoraria": "America/Argentina/Buenos_Aires",
-
   "segundosSinSenal": 180,
   "minutosRecordatorio": 30,
 
+  "equipos": {
+    "PC-VMIX": { "alias": "vMix", "programas": ["vMix"]},
+    "PC-PROYECCION": { "alias": "Proyección", "programas": ["ProPresenter", "PowerPoint", "vMix"]},
+    "PC-ILUMINACION": { "alias": "Iluminación", "programas": ["grandMA", "Hog 4"]}
+  },
+
   "programas": [
-    { "nombre": "ProPresenter", "procesos": ["ProPresenter"] },
-    { "nombre": "OBS", "procesos": ["obs64", "obs"] },
-    { "nombre": "vMix", "procesos": ["vMix64", "vMix"] },
-    { "nombre": "Resolume", "procesos": ["Avenue", "Arena"] },
-    { "nombre": "FreeStyler (luces)", "procesos": ["FreeStyler512"] }
+    { "nombre": "vMix", "procesos": ["vMix64", "vMix"]},
+    { "nombre": "ProPresenter", "procesos": ["ProPresenter"]},
+    { "nombre": "PowerPoint", "procesos": ["POWERPNT"]},
+    { "nombre": "grandMA", "procesos": ["gma2onpc", "app_gma3", "gma3"]},
+    { "nombre": "Hog 4", "procesos": ["Hog4PC", "HogPC"]}
   ],
 
   "accesoRemoto": [
-    { "nombre": "AnyDesk", "procesos": ["anydesk --backend", "anydeskmsi --backend"] },
-    { "nombre": "TeamViewer", "procesos": ["tv_x64", "tv_w32"] },
-    { "nombre": "Chrome Remote Desktop", "procesos": ["remoting_desktop"] },
-    { "nombre": "RustDesk", "procesos": ["rustdesk --cm"] },
-    { "nombre": "Compartir pantalla (Mac)", "procesos": ["screensharingd"] }
+    { "nombre": "AnyDesk", "procesos": ["anydesk --backend", "anydeskmsi --backend"]},
+    { "nombre": "TeamViewer", "procesos": ["tv_x64", "tv_w32"]},
+    { "nombre": "Chrome Remote Desktop", "procesos": ["remoting_desktop"]},
+    { "nombre": "RustDesk", "procesos": ["rustdesk --cm"]},
+    { "nombre": "Compartir pantalla (Mac)", "procesos": ["screensharingd"]}
+  ],
+
+  "dispositivos": [
+    { "nombre": "Proyector 1", "host": "192.168.1.61", "pc": "PC-PROYECCION", "tipo": "proyector" },
+    { "nombre": "Proyector 2", "host": "192.168.1.62", "pc": "PC-PROYECCION", "tipo": "proyector" },
+    { "nombre": "ATEM", "host": "192.168.10.240", "pc": "PC-VMIX", "tipo": "atem" }
   ],
 
   "horarios": [
@@ -28,22 +41,6 @@
     { "nombre": "Culto domingo tarde", "dias": ["dom"], "desde": "17:00", "hasta": "22:00" },
     { "nombre": "Reunión miércoles", "dias": ["mie"], "desde": "18:30", "hasta": "22:30" },
     { "nombre": "Ensayo sábado", "dias": ["sab"], "desde": "15:00", "hasta": "20:00" }
-  ],
-
-  "equipos": {
-    "PC-PROYECCION": { "alias": "Proyección" },
-    "PC-STREAMING": { "alias": "Streaming" },
-    "PC-LUCES": {
-      "alias": "Luces",
-      "horarios": [
-        { "nombre": "Domingo completo", "dias": ["dom"], "desde": "07:30", "hasta": "22:30" }
-      ]
-    }
-  },
-
-  "dispositivos": [
-    { "nombre": "Proyector principal", "host": "192.168.1.60", "pc": "PC-PROYECCION" },
-    { "nombre": "ATEM", "host": "192.168.10.240", "pc": "PC-STREAMING" }
   ],
 
   "notificar": ["fuera_de_horario", "encendido", "apagado", "sin_senal", "programa_abierto", "programa_cerrado", "dispositivo", "remoto_conectado", "remoto_desconectado", "monitor_detenido"],
