@@ -15,6 +15,13 @@
     { "nombre": "FreeStyler (luces)", "procesos": ["FreeStyler512"] }
   ],
 
+  "accesoRemoto": [
+    { "nombre": "TeamViewer", "procesos": ["tv_x64", "tv_w32"] },
+    { "nombre": "Chrome Remote Desktop", "procesos": ["remoting_desktop"] },
+    { "nombre": "RustDesk", "procesos": ["rustdesk-cm"] },
+    { "nombre": "Compartir pantalla (Mac)", "procesos": ["screensharingd"] }
+  ],
+
   "horarios": [
     { "nombre": "Culto domingo mañana", "dias": ["dom"], "desde": "08:00", "hasta": "13:30" },
     { "nombre": "Culto domingo tarde", "dias": ["dom"], "desde": "17:00", "hasta": "22:00" },
@@ -38,7 +45,7 @@
     { "nombre": "Proyector principal", "host": "192.168.1.60" }
   ],
 
-  "notificar": ["fuera_de_horario", "encendido", "apagado", "sin_senal", "programa_abierto", "programa_cerrado", "dispositivo"],
+  "notificar": ["fuera_de_horario", "encendido", "apagado", "sin_senal", "programa_abierto", "programa_cerrado", "dispositivo", "remoto_conectado", "remoto_desconectado", "monitor_detenido"],
 
   "telegram": { "botToken": "", "chatId": "" },
   "ntfy": { "servidor": "https://ntfy.sh", "tema": "" }

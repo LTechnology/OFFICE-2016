@@ -30,6 +30,7 @@
   .meta { color: var(--muted); font-size: 13px; margin-top: 6px; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
   .chip { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+  .chip.remoto { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); font-weight: 600; }
   .banner { margin-top: 10px; font-size: 13px; color: var(--bad); font-weight: 600; }
   table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
   td { padding: 8px 10px; border-top: 1px solid var(--line); vertical-align: top; font-size: 14px; }
@@ -66,7 +67,9 @@
   </section>
 </main>
 <script>
-const ICONOS = { encendido: '🟢', apagado: '⚪', sin_senal: '🟠', programa_abierto: '▶️', programa_cerrado: '⏹️', fuera_de_horario: '🚨', dispositivo: '🔌' };
+const ICONOS = { encendido: '🟢', apagado: '⚪', sin_senal: '🟠', programa_abierto: '▶️', programa_cerrado: '⏹️', fuera_de_horario: '🚨', dispositivo: '🔌',
+  remoto_conectado: '🖥️', remoto_desconectado: '🖥️', monitor_detenido: '⏸️', monitor_reanudado: '▶️' };
+const AVISOS = ['fuera_de_horario', 'remoto_conectado', 'monitor_detenido'];
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const hora = iso => iso ? new Date(iso).toLocaleString('es-AR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
@@ -88,12 +91,15 @@ function renderState(st) {
       <div class="top">
         <span class="dot ${m.online ? (m.fueraDeHorario ? 'bad' : 'ok') : ''}"></span>
         <span class="name">${esc(m.alias || m.id)}</span>
-        <span class="estado" style="color:var(${m.online ? '--ok' : '--muted'})">${m.online ? 'Encendida' : 'Apagada'}</span>
+        <span class="estado" style="color:var(${m.online ? '--ok' : m.detenido ? '--warn' : '--muted'})">${m.online ? 'Encendida' : m.detenido ? 'Monitor cerrado' : 'Apagada'}</span>
       </div>
       <div class="meta">${m.online
         ? `Encendida desde ${hora(m.bootTime)}${m.usuario ? ` · usuario ${esc(m.usuario)}` : ''}`
-        : `Última señal ${hace(m.lastSeen)} (${hora(m.lastSeen)})`}</div>
+        : m.detenido
+          ? `Cerraron el monitor ${hace(m.detenido.ts)}${m.detenido.por ? ` (usuario ${esc(m.detenido.por)})` : ''}. Se desconoce el estado.`
+          : `Última señal ${hace(m.lastSeen)} (${hora(m.lastSeen)})`}</div>
       ${m.online && m.horarioActual ? `<div class="meta">En horario: ${esc(m.horarioActual)}</div>` : ''}
+      ${m.online && m.remotos?.length ? `<div class="chips">${m.remotos.map(r => `<span class="chip remoto">🖥️ Remoto: ${esc(r)}</span>`).join('')}</div>` : ''}
       <div class="chips">${(m.programas || []).map(p => `<span class="chip">${esc(p)}</span>`).join('') ||
         (m.online ? '<span class="meta" style="margin:0">Ningún programa vigilado abierto</span>' : '')}</div>
       ${m.online && m.fueraDeHorario ? '<div class="banner">🚨 Encendida fuera de horario</div>' : ''}
@@ -128,7 +134,7 @@ function connect() {
     const tb = $('events');
     if (tb.querySelector('.empty')) tb.innerHTML = '';
     tb.insertAdjacentHTML('afterbegin', eventRow(ev));
-    if (ev.tipo === 'fuera_de_horario' && Notification?.permission === 'granted') new Notification('Monitor de Técnica', { body: ev.mensaje });
+    if (AVISOS.includes(ev.tipo) && window.Notification?.permission === 'granted') new Notification('Monitor de Técnica', { body: ev.mensaje });
   });
 }
 if (window.Notification && Notification.permission === 'default') document.addEventListener('click', () => Notification.requestPermission(), { once: true });

@@ -22,6 +22,7 @@ const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
 config.segundosSinSenal ??= 180;
 config.minutosRecordatorio ??= 30;
 config.programas ??= [];
+config.accesoRemoto ??= [];
 config.horarios ??= [];
 config.equipos ??= {};
 config.dispositivos ??= [];
@@ -73,6 +74,7 @@ function logEvent(tipo, equipo, mensaje, extra = {}) {
 const ICONOS = {
   encendido: '🟢', apagado: '⚪', sin_senal: '🟠', programa_abierto: '▶️',
   programa_cerrado: '⏹️', fuera_de_horario: '🚨', dispositivo: '🔌',
+  remoto_conectado: '🖥️', remoto_desconectado: '🖥️', monitor_detenido: '⏸️', monitor_reanudado: '▶️',
 };
 
 async function notify(ev) {
@@ -138,11 +140,27 @@ function horarioActivo(id) {
 
 function aliasDe(id) { return config.equipos[id]?.alias || id; }
 
-function programasAbiertos(procesos) {
+function coincidencias(lista, procesos) {
   const set = new Set(procesos.map(p => String(p).toLowerCase().replace(/\.exe$/, '')));
-  return config.programas
+  return lista
     .filter(p => p.procesos.some(n => set.has(n.toLowerCase().replace(/\.exe$/, ''))))
     .map(p => p.nombre);
+}
+
+// Conexiones remotas: las que informa el agente (RDP, con IP) + programas de
+// acceso remoto que sólo tienen un proceso abierto mientras hay una sesión.
+function conexionesRemotas(body, procesos) {
+  const lista = (Array.isArray(body.remoto) ? body.remoto : [])
+    .map(r => r && r.tipo ? `${r.tipo}${r.desde ? ` desde ${r.desde}` : ''}` : null)
+    .filter(Boolean);
+  return [...new Set([...lista, ...coincidencias(config.accesoRemoto, procesos)])];
+}
+
+// Cierra todo lo que estaba abierto cuando la PC deja de informar.
+function limpiar(m) {
+  m.programas = [];
+  m.remotos = [];
+  m.fueraDeHorario = false;
 }
 
 function handleHeartbeat(body) {
@@ -158,29 +176,54 @@ function handleHeartbeat(body) {
     m.lastSeen = new Date().toISOString();
     const abiertos = m.programas.length ? ` (programas abiertos: ${m.programas.join(', ')})` : '';
     logEvent('apagado', id, `${nombre} se está apagando${abiertos}`);
-    m.programas = [];
-    m.fueraDeHorario = false;
+    limpiar(m);
+    m.detenido = null;
     saveState();
     broadcast('estado', publicState());
     return { status: 200, body: { ok: true } };
   }
 
+  if (body.evento === 'detenido') {
+    const quien = String(body.usuario || '').slice(0, 64);
+    m.online = false;
+    m.lastSeen = new Date().toISOString();
+    m.detenido = { por: quien || null, ts: m.lastSeen };
+    logEvent('monitor_detenido', id,
+      `En ${nombre} cerraron el monitor${quien ? ` (usuario ${quien})` : ''}. No se va a ver qué pasa en esa PC hasta que se reinicie o vuelvan a iniciar sesión.`);
+    limpiar(m);
+    saveState();
+    broadcast('estado', publicState());
+    return { status: 200, body: { ok: true } };
+  }
+
+  const reinicio = body.inicioSistema && body.inicioSistema !== m.bootTime;
+  const estabaDetenido = !!m.detenido;
   m.online = true;
+  m.detenido = null;
   m.lastSeen = new Date().toISOString();
   m.bootTime = body.inicioSistema || m.bootTime;
   m.usuario = body.usuario || m.usuario;
 
-  if (!estabaOnline) {
+  if (estabaDetenido && !reinicio) {
+    logEvent('monitor_reanudado', id, `El monitor de ${nombre} volvió a funcionar`);
+  } else if (!estabaOnline) {
     const desde = body.inicioSistema
       ? ` (encendida a las ${new Date(body.inicioSistema).toLocaleTimeString('es-AR', { timeZone: config.zonaHoraria, hour: '2-digit', minute: '2-digit' })})`
       : '';
     logEvent('encendido', id, `${nombre} está encendida${desde}`);
   }
 
-  const ahora = programasAbiertos(Array.isArray(body.procesos) ? body.procesos : []);
+  const procesos = Array.isArray(body.procesos) ? body.procesos : [];
+  const ahora = coincidencias(config.programas, procesos);
   for (const p of ahora) if (!m.programas.includes(p)) logEvent('programa_abierto', id, `${p} se abrió en ${nombre}`, { programa: p });
   for (const p of m.programas) if (!ahora.includes(p)) logEvent('programa_cerrado', id, `${p} se cerró en ${nombre}`, { programa: p });
   m.programas = ahora;
+
+  const remotos = conexionesRemotas(body, procesos);
+  m.remotos ??= [];
+  for (const r of remotos) if (!m.remotos.includes(r)) logEvent('remoto_conectado', id, `Se conectaron por remoto a ${nombre}: ${r}`, { remoto: r });
+  for (const r of m.remotos) if (!remotos.includes(r)) logEvent('remoto_desconectado', id, `Terminó la conexión remota a ${nombre}: ${r}`, { remoto: r });
+  m.remotos = remotos;
 
   evaluarHorario(m);
   saveState();
@@ -200,7 +243,8 @@ function evaluarHorario(m) {
   if (yaAvisado) return;
   m.ultimoAvisoFuera = new Date(ahora).toISOString();
   const progs = m.programas.length ? ` con ${m.programas.join(', ')} abierto` : '';
-  logEvent('fuera_de_horario', m.id, `${m.alias} está encendida fuera de horario${progs}`);
+  const rem = m.remotos?.length ? ` y conexión remota (${m.remotos.join(', ')})` : '';
+  logEvent('fuera_de_horario', m.id, `${m.alias} está encendida fuera de horario${progs}${rem}`);
 }
 
 // ---------- Chequeos periódicos ----------
@@ -213,8 +257,7 @@ function chequearSinSenal() {
       m.online = false;
       const abiertos = m.programas.length ? ` Tenía abierto: ${m.programas.join(', ')}.` : '';
       logEvent('sin_senal', m.id, `${m.alias} dejó de responder (apagado brusco, corte de luz o sin red).${abiertos}`);
-      m.programas = [];
-      m.fueraDeHorario = false;
+      limpiar(m);
       cambio = true;
     } else if (m.online) {
       const antes = m.fueraDeHorario;

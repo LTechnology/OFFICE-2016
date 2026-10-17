@@ -22,6 +22,8 @@ celular** cuando algo queda prendido fuera de horario o se apaga mal.
 | ▶️ / ⏹️ Programa abierto / cerrado | Se abrió o cerró un programa de la lista |
 | 🚨 Fuera de horario | La PC (o un equipo en red) está prendida fuera de los horarios permitidos. Se repite cada 30 min mientras siga así |
 | 🔌 Dispositivo | Un equipo con IP (consola, proyector, nodo DMX…) se prendió o se apagó |
+| 🖥️ Conexión remota | Alguien se conectó (o desconectó) por Escritorio remoto de Windows (con la IP de origen), TeamViewer, Chrome Remote Desktop, RustDesk… |
+| ⏸️ Monitor cerrado | Alguien cerró el monitor desde el iconito de la bandeja (con el usuario de Windows) |
 
 Todo queda guardado en `servidor/datos/eventos.jsonl` y se ve en el panel.
 
@@ -67,9 +69,26 @@ powershell -ExecutionPolicy Bypass -File .\instalar.ps1 -Servidor http://192.168
 
 Opcional: `-NombreEquipo PC-PROYECCION` (por defecto usa el nombre de Windows).
 
-Esto crea dos tareas programadas (se ven en el Programador de tareas de Windows):
-- `MonitorTecnica`: arranca con Windows, sin ventana, prioridad baja.
+Esto crea tres tareas programadas (se ven en el Programador de tareas de Windows):
+- `MonitorTecnica`: el agente. Arranca con Windows, sin ventana, prioridad baja.
 - `MonitorTecnica-Apagado`: avisa al servidor cuando alguien apaga o reinicia la PC.
+- `MonitorTecnica-Icono`: el iconito de la bandeja, para cada usuario que inicia sesión.
+
+### El iconito (abajo a la derecha)
+
+Es un circulito de color en la bandeja del sistema:
+
+- 🟢 **Verde**: funcionando y conectado al servidor.
+- 🟠 **Naranja**: funcionando, pero sin conexión con el servidor (revisar red o servidor).
+- ⚪ **Gris**: el agente de fondo no está corriendo.
+
+Con clic derecho se ve el estado, se puede **abrir el panel**, o **cerrar el monitor**. Al cerrarlo,
+Windows pide confirmación, la PC deja de monitorearse hasta que se reinicie o alguien vuelva a
+iniciar sesión, y al equipo de técnica le llega un aviso ⏸️ con el usuario que lo cerró.
+El icono sólo muestra el estado: si se cuelga o se termina con el Administrador de tareas,
+el monitoreo de fondo sigue funcionando.
+
+> Si el icono queda escondido en la flechita `^`, se puede arrastrar a la barra para que quede siempre visible.
 
 Para quitarlo: `powershell -ExecutionPolicy Bypass -File .\desinstalar.ps1` (como Administrador).
 
@@ -81,6 +100,18 @@ Para quitarlo: `powershell -ExecutionPolicy Bypass -File .\desinstalar.ps1` (com
 
 Para que arranque solo, agregalo como *LaunchAgent* (`~/Library/LaunchAgents`) o en
 Ajustes → General → Ítems de inicio.
+
+## Conexiones remotas
+
+- **Escritorio remoto de Windows (RDP)**: se detecta siempre, con la IP desde donde se conectan.
+- **TeamViewer, Chrome Remote Desktop, RustDesk, Compartir pantalla de Mac**: vienen configurados
+  en `accesoRemoto`. Se detectan por un proceso que sólo existe mientras hay alguien conectado.
+- **AnyDesk y otros**: los nombres de esos procesos cambian según el programa y la versión. Para
+  averiguarlo, ejecutá en la PC `agente\diagnostico-remoto.ps1`: saca una "foto" de los procesos
+  antes y durante una conexión de prueba, y te dice qué agregar en `accesoRemoto`.
+
+Como el agente informa una vez por minuto, una conexión de menos de un minuto puede pasar
+desapercibida. Si hace falta más precisión, bajá `-IntervaloSegundos` a 30 al instalar.
 
 ## 3. Configuración (`servidor/config.json`)
 
@@ -94,6 +125,7 @@ Ajustes → General → Ítems de inicio.
 | `programas` | Programas a vigilar. `procesos` es el nombre del proceso sin `.exe` (se ve en el Administrador de tareas → Detalles). |
 | `horarios` | Cuándo está **permitido** que las PCs estén prendidas. `dias`: `dom lun mar mie jue vie sab`. Fuera de estos horarios → 🚨. Pueden cruzar la medianoche (ej. `22:00` a `02:00`). |
 | `equipos` | Por nombre de PC: `alias` para mostrar y, si hace falta, `horarios` propios que reemplazan a los generales. |
+| `accesoRemoto` | Programas de acceso remoto: `procesos` que sólo aparecen mientras hay una sesión abierta. |
 | `dispositivos` | Equipos con IP para controlar por ping (consola, proyector…). También se les aplican los horarios. |
 | `notificar` | Qué tipos de evento mandan notificación al celular. Sacá `programa_abierto` / `programa_cerrado` si molestan mucho. |
 
