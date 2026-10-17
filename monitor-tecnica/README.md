@@ -52,6 +52,9 @@ node server.js
 
 Abrí `http://IP-DEL-SERVIDOR:8080` en el navegador o el celular.
 
+El historial y el último estado de cada PC se guardan en `servidor/datos/`. Si hiciste pruebas
+antes de dejarlo funcionando de verdad, borrá esa carpeta para arrancar con el registro limpio.
+
 > **Para verlo desde afuera de la iglesia**, la forma más simple y segura es instalar
 > [Tailscale](https://tailscale.com) (gratis) en el servidor y en los celulares del equipo.
 > Si lo ponés en la nube, configurá `claveDashboard` y usalo detrás de HTTPS.
