@@ -1,0 +1,45 @@
+{
+  "puerto": 8080,
+  "token": "CAMBIAR-POR-UNA-CLAVE-LARGA",
+  "claveDashboard": "",
+  "zonaHoraria": "America/Argentina/Buenos_Aires",
+
+  "segundosSinSenal": 180,
+  "minutosRecordatorio": 30,
+
+  "programas": [
+    { "nombre": "ProPresenter", "procesos": ["ProPresenter"] },
+    { "nombre": "OBS", "procesos": ["obs64", "obs"] },
+    { "nombre": "vMix", "procesos": ["vMix64", "vMix"] },
+    { "nombre": "Resolume", "procesos": ["Avenue", "Arena"] },
+    { "nombre": "FreeStyler (luces)", "procesos": ["FreeStyler512"] }
+  ],
+
+  "horarios": [
+    { "nombre": "Culto domingo mañana", "dias": ["dom"], "desde": "08:00", "hasta": "13:30" },
+    { "nombre": "Culto domingo tarde", "dias": ["dom"], "desde": "17:00", "hasta": "22:00" },
+    { "nombre": "Reunión miércoles", "dias": ["mie"], "desde": "18:30", "hasta": "22:30" },
+    { "nombre": "Ensayo sábado", "dias": ["sab"], "desde": "15:00", "hasta": "20:00" }
+  ],
+
+  "equipos": {
+    "PC-PROYECCION": { "alias": "Proyección" },
+    "PC-STREAMING": { "alias": "Streaming" },
+    "PC-LUCES": {
+      "alias": "Luces",
+      "horarios": [
+        { "nombre": "Domingo completo", "dias": ["dom"], "desde": "07:30", "hasta": "22:30" }
+      ]
+    }
+  },
+
+  "dispositivos": [
+    { "nombre": "Consola de sonido", "host": "192.168.1.50" },
+    { "nombre": "Proyector principal", "host": "192.168.1.60" }
+  ],
+
+  "notificar": ["fuera_de_horario", "encendido", "apagado", "sin_senal", "programa_abierto", "programa_cerrado", "dispositivo"],
+
+  "telegram": { "botToken": "", "chatId": "" },
+  "ntfy": { "servidor": "https://ntfy.sh", "tema": "" }
+}
