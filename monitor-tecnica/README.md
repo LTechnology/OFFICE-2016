@@ -112,21 +112,18 @@ Ajustes → General → Ítems de inicio.
   conexiones del propio AnyDesk (`C:\ProgramData\AnyDesk\connection_trace.txt`). Requiere AnyDesk
   **instalado** (no la versión portable).
 
-### Confirmar la detección de AnyDesk (hacerlo una vez)
+### AnyDesk: confirmado
 
-Los nombres de proceso de AnyDesk no están documentados oficialmente y pueden cambiar entre
-versiones, así que hay que confirmarlos con una prueba:
+Probado con una sesión real (AnyDesk instalado, Windows 11): mientras alguien está conectado
+aparece el proceso `anydesk --backend`, que es lo que trae `accesoRemoto` por defecto.
+AnyDesk anota la conexión en su registro apenas empieza la sesión, así que el aviso ya trae el ID.
 
-1. Actualizá AnyDesk a la última versión e instalalo (no lo uses portable).
-2. En la PC, abrí PowerShell **como Administrador** y ejecutá `agente\diagnostico-remoto.ps1`.
-3. Con nadie conectado, presioná Enter. Después conectate por AnyDesk desde otra compu,
-   aceptá la conexión y presioná Enter de nuevo.
-4. El script muestra qué procesos aparecieron durante la sesión (por ejemplo `anydesk --backend`).
-   Si es distinto a lo que está en `accesoRemoto` → AnyDesk, reemplazalo en `config.json` y
-   reiniciá el servidor. Las PCs no hay que tocarlas.
+Ese proceso pertenece a SYSTEM, y Windows sólo deja ver su línea de comando con permisos de
+administrador. El agente instalado con `instalar.ps1` ya corre así. Si alguna vez corre sin esos
+permisos, el panel muestra una advertencia ⚠️ en esa PC.
 
-Si no aparece nada nuevo, avisá: hay otras formas de detectarlo (por ejemplo leyendo el
-registro de AnyDesk) que se pueden agregar.
+Si en una versión futura de AnyDesk deja de detectarse, ejecutá `agente\diagnostico-remoto.ps1`
+**como Administrador** durante una conexión de prueba y copiá lo que aparece en `accesoRemoto`.
 
 Como el agente informa una vez por minuto, una conexión de menos de un minuto puede pasar
 desapercibida. Si hace falta más precisión, bajá `-IntervaloSegundos` a 30 al instalar.

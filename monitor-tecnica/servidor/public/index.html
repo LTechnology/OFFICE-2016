@@ -99,6 +99,7 @@ function renderState(st) {
           ? `Cerraron el monitor ${hace(m.detenido.ts)}${m.detenido.por ? ` (usuario ${esc(m.detenido.por)})` : ''}. Se desconoce el estado.`
           : `Última señal ${hace(m.lastSeen)} (${hora(m.lastSeen)})`}</div>
       ${m.online && m.horarioActual ? `<div class="meta">En horario: ${esc(m.horarioActual)}</div>` : ''}
+      ${m.online && m.elevado === false ? '<div class="meta" style="color:var(--warn)">⚠️ El agente corre sin permisos de administrador: no puede detectar sesiones de AnyDesk. Reinstalalo con instalar.ps1.</div>' : ''}
       ${m.online && m.remotos?.length ? `<div class="chips">${m.remotos.map(r => `<span class="chip remoto">🖥️ Remoto: ${esc(r)}</span>`).join('')}</div>` : ''}
       <div class="chips">${(m.programas || []).map(p => `<span class="chip">${esc(p)}</span>`).join('') ||
         (m.online ? '<span class="meta" style="margin:0">Ningún programa vigilado abierto</span>' : '')}</div>

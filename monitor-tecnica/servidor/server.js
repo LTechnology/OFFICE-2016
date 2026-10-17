@@ -203,6 +203,7 @@ function handleHeartbeat(body) {
   m.lastSeen = new Date().toISOString();
   m.bootTime = body.inicioSistema || m.bootTime;
   m.usuario = body.usuario || m.usuario;
+  m.elevado = typeof body.elevado === 'boolean' ? body.elevado : null;
 
   if (estabaDetenido && !reinicio) {
     logEvent('monitor_reanudado', id, `El monitor de ${nombre} volvió a funcionar`);

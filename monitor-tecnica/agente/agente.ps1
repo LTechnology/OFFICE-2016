@@ -99,6 +99,11 @@ function UltimoIdAnyDesk {
   return $null
 }
 
+# Sin permisos de administrador Windows oculta la línea de comando de los procesos
+# de SYSTEM (como la sesión de AnyDesk), así que no se pueden detectar. Se informa al servidor.
+$elevado = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+  [Security.Principal.WindowsBuiltInRole]::Administrator)
+
 $usuario = $null
 $vuelta = 0
 $detenido = $false
@@ -119,7 +124,7 @@ while ($true) {
   }
   $extra = @(ProcesosExtra)
   $procesos = @(Get-Process | Select-Object -ExpandProperty ProcessName -Unique) + $extra
-  $datos = @{ equipo = $equipo; inicioSistema = $inicio; usuario = $usuario; procesos = $procesos; remoto = @(ConexionesRemotas) }
+  $datos = @{ equipo = $equipo; inicioSistema = $inicio; usuario = $usuario; procesos = $procesos; remoto = @(ConexionesRemotas); elevado = $elevado }
   if ($extra -match '^anydesk') { $datos.anydeskId = UltimoIdAnyDesk }
   $ok = Enviar $datos 8
 
