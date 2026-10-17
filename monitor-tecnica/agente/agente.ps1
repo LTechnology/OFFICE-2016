@@ -81,7 +81,19 @@ function ProcesosExtra {
 function UltimoIdAnyDesk {
   $archivo = Join-Path $env:ProgramData 'AnyDesk\connection_trace.txt'
   try {
-    $linea = Get-Content -Tail 20 $archivo -ErrorAction Stop | Where-Object { $_ -match '^\s*Incoming' } | Select-Object -Last 1
+    # AnyDesk lo guarda en UTF-16 sin BOM (al menos en Windows); se detecta por los bytes
+    # para no depender de la versión. Se abre compartido porque AnyDesk lo tiene abierto.
+    $fs = New-Object IO.FileStream($archivo, 'Open', 'Read', 'ReadWrite')
+    try {
+      $largo = [Math]::Min($fs.Length, 16384)
+      [void]$fs.Seek(-$largo, 'End')
+      $bytes = New-Object byte[] $largo
+      [void]$fs.Read($bytes, 0, $largo)
+    } finally { $fs.Dispose() }
+    $utf16 = $largo -ge 2 -and ($bytes[0] -eq 0 -or $bytes[1] -eq 0)
+    if ($utf16 -and $largo % 2) { $bytes = $bytes[1..($largo - 1)] }
+    $texto = if ($utf16) { [Text.Encoding]::Unicode.GetString($bytes) } else { [Text.Encoding]::UTF8.GetString($bytes) }
+    $linea = $texto -split "`r?`n" | Where-Object { $_ -match '^\s*Incoming' } | Select-Object -Last 1
     if ($linea -match '(\d{9,10})\s*$') { return $Matches[1] }
   } catch {}
   return $null
